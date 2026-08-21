@@ -11,6 +11,9 @@ export const metadata = {
     "Participe de rifas online com segurança. Pagamento via PIX, números garantidos e sorteio transparente.",
 };
 
+// Dados de rifas mudam em tempo real — renderiza no servidor a cada acesso
+export const dynamic = "force-dynamic";
+
 async function getActiveRaffles() {
   return db.raffle.findMany({
     where: { status: "ACTIVE" },
