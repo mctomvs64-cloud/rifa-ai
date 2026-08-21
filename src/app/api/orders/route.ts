@@ -156,42 +156,46 @@ export async function POST(req: NextRequest) {
       return { order, expiresAt };
     });
 
-    // Cria a preferência PIX no Mercado Pago (fora da transação DB)
+    // Cria o pagamento PIX no Mercado Pago (fora da transação DB)
     let qrCode = null;
     let qrCodeBase64 = null;
     let pixCopyPaste = null;
-    let mpPreferenceId = null;
+    let mpPaymentId = null;
 
     try {
-      const { createPixPreference } = await import("@/lib/mercadopago");
+      const { createPixPayment } = await import("@/lib/mercadopago");
       const orderWithRaffle = await db.order.findUnique({
         where: { id: result.order.id },
         include: { raffle: true },
       });
 
       if (orderWithRaffle) {
-        const pixData = await createPixPreference({
+        const pixData = await createPixPayment({
           order: orderWithRaffle,
           numbers,
           buyerName,
-          buyerEmail: buyerEmail ?? `${buyerPhone}@temp.rifaai.com`,
-          buyerPhone,
+          buyerEmail: buyerEmail ?? `comprador.${result.order.id.slice(0, 8)}@rifaai.com.br`,
+          buyerPhone: buyerPhone.replace(/\D/g, ""),
         });
 
         qrCode = pixData.qrCode;
         qrCodeBase64 = pixData.qrCodeBase64;
         pixCopyPaste = pixData.pixCopyPaste;
-        mpPreferenceId = pixData.preferenceId;
+        mpPaymentId = pixData.paymentId;
 
-        // Salva o preference ID no pedido
+        // Salva o payment ID e QR Code no pedido
         await db.order.update({
           where: { id: result.order.id },
-          data: { mpPreferenceId, mpQrCode: qrCodeBase64, mpQrCodeText: pixCopyPaste },
+          data: {
+            mpPaymentId,
+            mpQrCode: qrCodeBase64,
+            mpQrCodeText: pixCopyPaste,
+          },
         });
       }
     } catch (mpError) {
-      console.error("[Orders] Erro ao criar preferência MP:", mpError);
-      // Não falha o pedido — exibe dados manualmente se MP falhar
+      console.error("[Orders] Erro ao criar pagamento PIX no MP:", mpError);
+      // Não cancela o pedido — comprador pode tentar novamente ou pagar manualmente
     }
 
     return NextResponse.json(
@@ -204,7 +208,7 @@ export async function POST(req: NextRequest) {
           qrCode,
           qrCodeBase64,
           copyPaste: pixCopyPaste,
-          preferenceId: mpPreferenceId,
+          paymentId: mpPaymentId,
         },
       },
       { status: 201 }
