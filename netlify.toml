@@ -1,6 +1,5 @@
-[build.environment]
-  # Configurações para Next.js na Netlify
-  NODE_VERSION = "20"
+[build]
+  command = "npx prisma generate && npm run build"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[build.environment]
+  NODE_VERSION = "20"
