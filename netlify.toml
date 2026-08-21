@@ -1,11 +1,11 @@
 [build]
-  command = "npx prisma generate && npm run build"
+  command = "npm run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
   NEXT_TELEMETRY_DISABLED = "1"
 
-# Suporte a Next.js na Netlify (runtime)
 [[plugins]]
   package = "@netlify/plugin-nextjs"
