@@ -5,6 +5,6 @@
 [build.environment]
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
-  PRISMA_GENERATE_DATAPROXY = "true"
 
-# Removido o plugin duplicado pois o Netlify Next Runtime v5 já é nativo
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
