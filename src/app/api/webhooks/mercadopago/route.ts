@@ -13,21 +13,31 @@ import { generateBuyerToSellerLink } from "@/lib/whatsapp";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text();
-    const signature = req.headers.get("x-signature") ?? "";
+    const xSignature = req.headers.get("x-signature") ?? "";
+    const xRequestId = req.headers.get("x-request-id") ?? "";
     const secret = process.env.MP_WEBHOOK_SECRET ?? "";
 
-    // Verifica assinatura do webhook (opcional mas recomendado)
-    if (secret && !verifyWebhookSignature(signature, body, secret)) {
-      console.warn("[Webhook MP] Assinatura inválida recebida");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
-
     const data = JSON.parse(body);
+
+    // Verifica assinatura HMAC do Mercado Pago (v2 com ts+v1)
+    if (secret && data?.data?.id) {
+      const isValid = verifyWebhookSignature(
+        xSignature,
+        xRequestId,
+        String(data.data.id),
+        secret
+      );
+      if (!isValid) {
+        console.warn("[Webhook MP] Assinatura inválida");
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      }
+    }
 
     // Mercado Pago envia vários tipos de eventos — só processamos "payment"
     if (data.type !== "payment" || !data.data?.id) {
       return NextResponse.json({ received: true });
     }
+
 
     const paymentId = String(data.data.id);
 

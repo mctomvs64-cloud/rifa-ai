@@ -1,16 +1,16 @@
-import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
+import { MercadoPagoConfig, Payment } from "mercadopago";
 import type { Order, Raffle } from "@prisma/client";
+import crypto from "crypto";
 
-// Inicializa o cliente do Mercado Pago com o access token da plataforma
+// Inicializa o cliente do Mercado Pago com o access token real
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
-  options: { timeout: 5000 },
+  options: { timeout: 8000 },
 });
 
-const preference = new Preference(client);
-const payment = new Payment(client);
+const paymentClient = new Payment(client);
 
-interface CreatePixPreferenceParams {
+interface CreatePixPaymentParams {
   order: Order & { raffle: Raffle };
   numbers: number[];
   buyerName: string;
@@ -18,91 +18,77 @@ interface CreatePixPreferenceParams {
   buyerPhone: string;
 }
 
-interface PixPreferenceResult {
-  preferenceId: string;
+interface PixPaymentResult {
+  paymentId: string;
   qrCode: string;
   qrCodeBase64: string;
   pixCopyPaste: string;
+  expiresAt: string;
 }
 
 /**
- * Cria uma preferência de pagamento PIX no Mercado Pago.
+ * Cria um pagamento PIX diretamente no Mercado Pago.
  * Retorna o QR Code e o código copia-e-cola para o comprador.
+ *
+ * Documentação: https://www.mercadopago.com.br/developers/pt/docs/checkout-api/payment-methods/other-payment-methods/brasil/pix
  */
-export async function createPixPreference(
-  params: CreatePixPreferenceParams
-): Promise<PixPreferenceResult> {
+export async function createPixPayment(
+  params: CreatePixPaymentParams
+): Promise<PixPaymentResult> {
   const { order, numbers, buyerName, buyerEmail, buyerPhone } = params;
 
-  const externalReference = order.id;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  // Cria a preferência de pagamento com PIX como método prioritário
-  const response = await preference.create({
-    body: {
-      external_reference: externalReference,
-      items: [
-        {
-          id: order.raffleId,
-          title: `Rifa: ${order.raffle.title}`,
-          description: `${numbers.length} número(s): ${numbers.join(", ")}`,
-          quantity: 1,
-          unit_price: Number(order.totalAmount),
-          currency_id: "BRL",
-        },
-      ],
-      payer: {
-        name: buyerName,
-        email: buyerEmail,
-        phone: {
-          area_code: buyerPhone.slice(2, 4), // DDD
-          number: buyerPhone.slice(4),        // Número
-        },
-      },
-      payment_methods: {
-        // Priorizar PIX
-        default_payment_method_id: "pix",
-        excluded_payment_types: [],
-        installments: 1,
-      },
-      back_urls: {
-        success: `${appUrl}/checkout/sucesso?order=${order.id}`,
-        failure: `${appUrl}/checkout/erro?order=${order.id}`,
-        pending: `${appUrl}/checkout/pendente?order=${order.id}`,
-      },
-      auto_return: "approved",
-      notification_url: `${appUrl}/api/webhooks/mercadopago`,
-      expires: true,
-      expiration_date_to: order.expiresAt?.toISOString(),
-    },
-  });
+  // Formata o telefone no padrão do MP: +5511999999999
+  const cleanPhone = buyerPhone.replace(/\D/g, "");
+  const areaCode = cleanPhone.length >= 11 ? cleanPhone.slice(0, 2) : "11";
+  const phoneNumber = cleanPhone.length >= 11 ? cleanPhone.slice(2) : cleanPhone;
 
-  // Para pagamento PIX, criar o payment point of interaction
-  const pixPayment = await payment.create({
+  // Garante que o email não seja vazio (MP exige)
+  const safeEmail = buyerEmail?.trim() || `comprador.${order.id.slice(0, 8)}@rifaai.com.br`;
+
+  const expirationDate = order.expiresAt
+    ? order.expiresAt.toISOString()
+    : new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+  const response = await paymentClient.create({
     body: {
       transaction_amount: Number(order.totalAmount),
-      description: `Rifa: ${order.raffle.title} - ${numbers.length} número(s)`,
+      description: `${order.raffle.title} — ${numbers.length} número(s): ${numbers.slice(0, 5).join(", ")}${numbers.length > 5 ? "..." : ""}`,
       payment_method_id: "pix",
-      external_reference: externalReference,
+      external_reference: order.id,
       payer: {
-        email: buyerEmail,
-        first_name: buyerName.split(" ")[0],
+        email: safeEmail,
+        first_name: buyerName.split(" ")[0] ?? buyerName,
         last_name: buyerName.split(" ").slice(1).join(" ") || ".",
-        identification: { type: "CPF", number: "00000000000" }, // Comprador informa depois
+        identification: {
+          type: "CPF",
+          number: "00000000000", // CPF não é obrigatório para PIX no MP
+        },
+        phone: {
+          area_code: areaCode,
+          number: phoneNumber,
+        },
       },
       notification_url: `${appUrl}/api/webhooks/mercadopago`,
-      date_of_expiration: order.expiresAt?.toISOString(),
+      date_of_expiration: expirationDate,
     },
   });
 
-  const pointOfInteraction = pixPayment.point_of_interaction;
-  const transactionData = pointOfInteraction?.transaction_data;
+  const txData = response.point_of_interaction?.transaction_data;
+
+  if (!txData?.qr_code) {
+    throw new Error(
+      `Mercado Pago não retornou QR Code. Status: ${response.status}. Detalhe: ${response.status_detail}`
+    );
+  }
 
   return {
-    preferenceId: response.id!,
-    qrCode: transactionData?.qr_code ?? "",
-    qrCodeBase64: transactionData?.qr_code_base64 ?? "",
-    pixCopyPaste: transactionData?.qr_code ?? "",
+    paymentId: String(response.id),
+    qrCode: txData.qr_code,
+    qrCodeBase64: txData.qr_code_base64 ?? "",
+    pixCopyPaste: txData.qr_code,
+    expiresAt: expirationDate,
   };
 }
 
@@ -110,25 +96,69 @@ export async function createPixPreference(
  * Busca os detalhes de um pagamento no Mercado Pago pelo ID.
  */
 export async function getPaymentDetails(paymentId: string) {
-  const response = await payment.get({ id: paymentId });
+  const response = await paymentClient.get({ id: paymentId });
   return response;
 }
 
 /**
- * Verifica a assinatura do webhook do Mercado Pago.
- * Previne requisições falsas.
+ * Consulta o status de um pagamento usando o external_reference (orderId).
+ * Usado pelo polling do frontend para verificar se o PIX foi pago.
+ */
+export async function getPaymentByReference(orderId: string) {
+  const url = `https://api.mercadopago.com/v1/payments/search?external_reference=${orderId}&sort=date_created&criteria=desc&range=date_created&begin_date=NOW-1DAYS&end_date=NOW`;
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const results = data.results as Array<{ id: number; status: string; status_detail: string }>;
+
+  if (!results || results.length === 0) return null;
+
+  // Retorna o pagamento mais recente
+  return results[0];
+}
+
+/**
+ * Verifica a assinatura HMAC-SHA256 do webhook do Mercado Pago.
+ * Formato esperado: "ts=<timestamp>,v1=<hash>"
  */
 export function verifyWebhookSignature(
-  signature: string,
-  body: string,
+  xSignature: string,
+  xRequestId: string,
+  dataId: string,
   secret: string
 ): boolean {
-  const crypto = require("crypto");
-  const expectedSignature = crypto
+  if (!secret) return true; // Sem secret configurado, aceita tudo (dev mode)
+
+  // Extrai ts e v1 do header x-signature
+  const parts: Record<string, string> = {};
+  xSignature.split(",").forEach((part) => {
+    const [key, value] = part.split("=");
+    if (key && value) parts[key.trim()] = value.trim();
+  });
+
+  const ts = parts["ts"];
+  const v1 = parts["v1"];
+
+  if (!ts || !v1) return false;
+
+  // Manifesto de assinatura: "id:<dataId>;request-id:<xRequestId>;ts:<ts>;"
+  const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+
+  const expected = crypto
     .createHmac("sha256", secret)
-    .update(body)
+    .update(manifest)
     .digest("hex");
-  return signature === expectedSignature;
+
+  return expected === v1;
 }
 
 export { client as mercadoPagoClient };
