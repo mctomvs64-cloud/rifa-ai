@@ -1,0 +1,6 @@
+[build.environment]
+  # Configurações para Next.js na Netlify
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

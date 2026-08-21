@@ -1,0 +1,314 @@
+// RifaAI — Schema do Banco de Dados
+// Plataforma SaaS Multitenant de Rifas Online
+// Stack: PostgreSQL + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =============================================================
+// ENUMS
+// =============================================================
+
+enum UserRole {
+  ADMIN   // Super admin da plataforma
+  SELLER  // Vendedor (cria rifas)
+  BUYER   // Comprador (só compra)
+}
+
+enum UserStatus {
+  PENDING   // Aguardando aprovação (vendedores novos)
+  ACTIVE    // Ativo
+  SUSPENDED // Suspenso pelo admin
+}
+
+enum RaffleStatus {
+  DRAFT   // Rascunho (não publicada)
+  ACTIVE  // Ativa (compradores podem ver e comprar)
+  CLOSED  // Encerrada para novas compras
+  DRAWN   // Sorteio realizado
+}
+
+enum NumberStatus {
+  AVAILABLE // Disponível para compra
+  RESERVED  // Reservado (pagamento pendente, expira em 15min)
+  SOLD      // Vendido (pagamento confirmado)
+}
+
+enum OrderStatus {
+  PENDING   // Aguardando pagamento
+  PAID      // Pago (confirmado pelo webhook)
+  EXPIRED   // Expirou (reserva venceu, números liberados)
+  REFUNDED  // Reembolsado
+  CANCELLED // Cancelado
+}
+
+// =============================================================
+// USER — Usuários da plataforma (admin, vendedor, comprador)
+// =============================================================
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  phone     String?    // WhatsApp (formato: 5511999999999)
+  password  String?    // Hash bcrypt (null se usar OAuth)
+  image     String?    // Avatar URL
+  role      UserRole   @default(BUYER)
+  status    UserStatus @default(ACTIVE)
+
+  // Mercado Pago — para split payment (vendedores)
+  mpAccessToken  String? // OAuth access token do MP do vendedor
+  mpUserId       String? // User ID no Mercado Pago
+  mpPublicKey    String? // Public key do MP do vendedor
+
+  // Relações
+  raffles        Raffle[]         // Rifas criadas (vendedores)
+  orders         Order[]          // Pedidos como comprador
+  accounts       Account[]        // NextAuth OAuth accounts
+  sessions       Session[]        // NextAuth sessions
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// NextAuth — OAuth accounts
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// NextAuth — Sessions
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// NextAuth — Verification tokens (email magic link)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// =============================================================
+// RAFFLE — Rifas criadas pelos vendedores
+// =============================================================
+
+model Raffle {
+  id          String       @id @default(cuid())
+  slug        String       @unique // URL amigável (ex: rifa-iphone-15)
+  title       String
+  description String?
+  prize       String       // Descrição do prêmio
+  status      RaffleStatus @default(DRAFT)
+
+  // Configuração de números
+  totalNumbers    Int     // Total de cotas (ex: 100, 1000, 10000)
+  pricePerNumber  Decimal @db.Decimal(10, 2) // Preço por número (R$)
+  minNumbers      Int     @default(1)  // Mín por compra
+  maxNumbers      Int     @default(50) // Máx por compra
+
+  // Datas
+  drawDate   DateTime? // Data prevista do sorteio
+  closedAt   DateTime? // Quando foi encerrada
+  drawnAt    DateTime? // Quando foi sorteada
+
+  // Imagens (JSON array de URLs)
+  coverImage String?
+  images     String[] @default([])
+
+  // Taxa da plataforma (pode ser diferente do padrão global)
+  platformFeePercent Decimal @db.Decimal(5, 2) @default(5.00)
+
+  // Resultado do sorteio
+  winnerNumber Int?    // Número sorteado
+  winnerId     String? // ID do pedido vencedor
+
+  // WhatsApp do vendedor para receber confirmações
+  whatsappNumber String? // ex: 5511999999999
+
+  // Relações
+  sellerId String
+  seller   User     @relation(fields: [sellerId], references: [id])
+  numbers  Number[]
+  orders   Order[]
+  promotions Promotion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("raffles")
+}
+
+// =============================================================
+// NUMBER — Cotas/números de cada rifa
+// =============================================================
+
+model Number {
+  id     String       @id @default(cuid())
+  number Int          // Número da cota (1 até totalNumbers)
+  status NumberStatus @default(AVAILABLE)
+
+  // Relações
+  raffleId String
+  raffle   Raffle  @relation(fields: [raffleId], references: [id], onDelete: Cascade)
+  orderId  String?
+  order    Order?  @relation(fields: [orderId], references: [id])
+
+  reservedAt  DateTime? // Quando foi reservado
+  expiresAt   DateTime? // Quando a reserva expira
+  soldAt      DateTime? // Quando foi definitivamente vendido
+
+  @@unique([raffleId, number]) // Número único por rifa
+  @@index([raffleId, status])  // Index para queries de disponibilidade
+  @@map("numbers")
+}
+
+// =============================================================
+// ORDER — Pedidos de compra
+// =============================================================
+
+model Order {
+  id     String      @id @default(cuid())
+  status OrderStatus @default(PENDING)
+
+  // Dados do comprador (pode não ter conta cadastrada)
+  buyerName  String
+  buyerPhone String  // WhatsApp: 5511999999999
+  buyerEmail String?
+
+  // Valores financeiros
+  quantity       Int     // Quantidade de números
+  totalAmount    Decimal @db.Decimal(10, 2) // Valor total pago
+  platformFee    Decimal @db.Decimal(10, 2) // Taxa da plataforma
+  sellerAmount   Decimal @db.Decimal(10, 2) // Valor para o vendedor
+
+  // Mercado Pago
+  mpPaymentId    String? @unique // ID do pagamento no MP
+  mpPreferenceId String? // ID da preferência de checkout
+  mpStatus       String? // Status raw do MP (approved, pending, etc.)
+  mpQrCode       String? // QR Code base64 do PIX
+  mpQrCodeText   String? // Copia e cola do PIX
+
+  // WhatsApp
+  whatsappLink String? // Link wa.me pré-formatado gerado após pagamento
+
+  // Reserva temporária
+  expiresAt DateTime? // Quando a reserva dos números expira
+
+  // Relações
+  raffleId String
+  raffle   Raffle     @relation(fields: [raffleId], references: [id])
+  buyerId  String? // Null se comprador não tiver conta
+  buyer    User?      @relation(fields: [buyerId], references: [id])
+  numbers  Number[]
+
+  // Promoção aplicada (se o pedido veio de um pacote)
+  promotionId String?
+  promotion   Promotion? @relation(fields: [promotionId], references: [id])
+
+  paidAt     DateTime?
+  cancelledAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([raffleId])
+  @@index([buyerPhone])
+  @@index([mpPaymentId])
+  @@map("orders")
+}
+
+// =============================================================
+// PROMOTION — Pacotes promocionais de números
+// =============================================================
+
+model Promotion {
+  id            String    @id @default(cuid())
+  name          String // Ex: "Pacote 50 números"
+  quantity      Int // Quantidade de números do pacote
+  promoPrice    Decimal   @db.Decimal(10, 2) // Preço promocional
+  originalPrice Decimal   @db.Decimal(10, 2) // Preço original (para calcular economia)
+  sortOrder     Int       @default(0) // Ordem de exibição
+  active        Boolean   @default(true) // Só promoções ativas aparecem no site
+  featured      Boolean   @default(false) // Destaque ("Mais vendido")
+  startsAt      DateTime? // Início da vigência (opcional)
+  endsAt        DateTime? // Fim da vigência (opcional)
+  usageCount    Int       @default(0) // Histórico: quantas vezes foi usada
+
+  // Opcional: vincular a uma rifa específica. Null = vale para todas as rifas.
+  raffleId String?
+  raffle   Raffle? @relation(fields: [raffleId], references: [id], onDelete: Cascade)
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, sortOrder])
+  @@map("promotions")
+}
+
+// =============================================================
+// SETTINGS — Configurações globais da plataforma
+// =============================================================
+
+model Settings {
+  id    String @id @default("singleton") // Só 1 registro
+  key   String @unique
+  value String
+
+  @@map("settings")
+}
+
+// =============================================================
+// AFFILIATE — Sistema de afiliados (Fase 4)
+// =============================================================
+
+model Affiliate {
+  id         String  @id @default(cuid())
+  userId     String
+  raffleId   String
+  code       String  @unique // Código único do afiliado
+  commission Decimal @db.Decimal(5, 2) // % de comissão
+
+  clicks    Int @default(0)
+  sales     Int @default(0)
+  earnings  Decimal @db.Decimal(10, 2) @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("affiliates")
+}
