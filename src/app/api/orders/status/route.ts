@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
+import { releaseExpiredReservations } from "@/lib/reservations";
 
 /**
  * GET /api/orders/status?orderId=xxx
@@ -14,10 +15,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "orderId obrigatório" }, { status: 400 });
   }
 
-  const order = await db.order.findUnique({
+  let order = await db.order.findUnique({
     where: { id: orderId },
     select: {
       id: true,
+      raffleId: true,
       status: true,
       paidAt: true,
       whatsappLink: true,
@@ -30,6 +32,12 @@ export async function GET(req: NextRequest) {
 
   if (!order) {
     return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 });
+  }
+
+  // Se o pedido está pendente e o prazo venceu, libera imediatamente
+  if (order.status === "PENDING" && order.expiresAt && new Date(order.expiresAt) < new Date()) {
+    await releaseExpiredReservations(order.raffleId);
+    order = { ...order, status: "EXPIRED" };
   }
 
   return NextResponse.json(
