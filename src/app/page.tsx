@@ -15,25 +15,41 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 async function getActiveRaffles() {
-  return db.raffle.findMany({
-    where: { status: "ACTIVE" },
-    include: {
-      seller: { select: { name: true, image: true } },
-      _count: {
-        select: {
-          numbers: {
-            where: { status: "SOLD" },
+  try {
+    const raffles = await db.raffle.findMany({
+      where: { status: "ACTIVE" },
+      include: {
+        seller: { select: { name: true, image: true } },
+        _count: {
+          select: {
+            numbers: {
+              where: { status: "SOLD" },
+            },
           },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 12,
-  });
+      orderBy: { createdAt: "desc" },
+      take: 12,
+    });
+    return { data: raffles, error: null };
+  } catch (err: any) {
+    return { data: [], error: err?.message || String(err) };
+  }
 }
 
 export default async function HomePage() {
-  const raffles = await getActiveRaffles();
+  const { data: raffles, error } = await getActiveRaffles();
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-900 text-white p-10">
+        <div>
+          <h1 className="text-3xl font-bold mb-4">Erro de Servidor (Debug)</h1>
+          <pre className="bg-black/50 p-6 rounded text-sm overflow-auto max-w-4xl">{error}</pre>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
