@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { releaseExpiredReservations } from "@/lib/reservations";
 import { RafflePageClient } from "@/components/raffle/raffle-page-client";
 import { PublicNavbar } from "@/components/layout/public-navbar";
 import { PublicFooter } from "@/components/layout/public-footer";
@@ -10,6 +11,16 @@ interface RafflePageProps {
 }
 
 async function getRaffle(slug: string) {
+  // Encontra a rifa preliminarmente para obter o ID e liberar reservas
+  const initial = await db.raffle.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+
+  if (initial?.id) {
+    await releaseExpiredReservations(initial.id);
+  }
+
   return db.raffle.findUnique({
     where: { slug },
     include: {

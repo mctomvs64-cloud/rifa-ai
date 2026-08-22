@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { calculateFees } from "@/lib/utils";
+import { releaseExpiredReservations } from "@/lib/reservations";
 
 const createOrderSchema = z.object({
   raffleId: z.string(),
@@ -38,6 +39,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { raffleId, numbers, buyerName, buyerPhone, buyerEmail, promotionId } = parsed.data;
+
+    // Libera reservas expiradas antes de validar disponibilidade
+    await releaseExpiredReservations(raffleId);
 
     // Busca a rifa
     const raffle = await db.raffle.findUnique({

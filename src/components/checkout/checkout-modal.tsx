@@ -58,7 +58,7 @@ export function CheckoutModal({
     return () => clearInterval(timerRef.current!);
   }, [expiresAt]);
 
-  // ── Polling de Status ─────────────────────────────────────────────
+  // ── Polling de Status com detecção de expiração ──────────────────
   const pollStatus = useCallback(async () => {
     if (!orderId) return;
     try {
@@ -67,33 +67,35 @@ export function CheckoutModal({
       const data = await res.json();
       if (data.status === "PAID") {
         setPollingActive(false);
-        clearInterval(pollingRef.current!);
+        if (pollingRef.current) clearInterval(pollingRef.current);
         setWhatsappLink(data.whatsappLink ?? null);
         setStep("confirmed");
       } else if (data.status === "CANCELLED" || data.status === "EXPIRED") {
         setPollingActive(false);
-        clearInterval(pollingRef.current!);
+        if (pollingRef.current) clearInterval(pollingRef.current);
       }
     } catch {
-      // Silently ignore polling errors
+      // Ignore background network blips
     }
   }, [orderId]);
 
   useEffect(() => {
     if (!pollingActive || !orderId) return;
-    pollingRef.current = setInterval(pollStatus, 5000);
-    return () => clearInterval(pollingRef.current!);
+    pollingRef.current = setInterval(pollStatus, 4000);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
   }, [pollingActive, orderId, pollStatus]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      clearInterval(pollingRef.current!);
-      clearInterval(timerRef.current!);
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  // Reset state when modal reopens
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setStep("form");
@@ -107,6 +109,18 @@ export function CheckoutModal({
       setWhatsappLink(null);
     }
   }, [isOpen]);
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    let formatted = raw;
+    if (raw.length > 2) {
+      formatted = `(${raw.slice(0, 2)}) ${raw.slice(2)}`;
+    }
+    if (raw.length > 7) {
+      formatted = `(${raw.slice(0, 2)}) ${raw.slice(2, 7)}-${raw.slice(7, 11)}`;
+    }
+    setFormData({ ...formData, phone: formatted });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +161,6 @@ export function CheckoutModal({
         setStep("pix");
         setPollingActive(true);
       } else {
-        // PIX falhou — redireciona para página de acompanhamento
         router.push(`/checkout/sucesso/${data.orderId}`);
       }
     } catch {
@@ -163,7 +176,6 @@ export function CheckoutModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     } catch {
-      // Fallback para execCommand
       const el = document.createElement("textarea");
       el.value = pixData.copyPaste;
       document.body.appendChild(el);
@@ -185,244 +197,277 @@ export function CheckoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+      style={{ background: "rgba(3, 7, 18, 0.82)", backdropFilter: "blur(12px)" }}
     >
       <div
-        className="bg-card w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl border border-border relative overflow-hidden"
-        style={{ maxHeight: "95dvh", overflowY: "auto" }}
+        className="bg-card text-card-foreground w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border/80 relative overflow-hidden flex flex-col"
+        style={{ maxHeight: "95dvh" }}
       >
-        {/* Header gradient */}
-        <div className="h-1 w-full bg-gradient-to-r from-primary via-accent to-primary" />
+        {/* Top Accent Line */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600" />
 
-        <div className="p-6">
-          {/* Close button */}
+        {/* Modal Header */}
+        <div className="p-6 pb-4 border-b border-border/60 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-lg">
+              {step === "form" ? "📝" : step === "pix" ? "⚡" : "🎉"}
+            </div>
+            <div>
+              <h2 className="text-xl font-display font-black tracking-tight text-foreground">
+                {step === "form" ? "Finalizar Reserva" : step === "pix" ? "Pagamento PIX" : "Cotas Confirmadas!"}
+              </h2>
+              <p className="text-xs text-muted-foreground truncate max-w-[240px] sm:max-w-[320px]">
+                {raffleTitle}
+              </p>
+            </div>
+          </div>
+
           {step !== "confirmed" && (
             <button
               onClick={onClose}
               disabled={isProcessing}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 text-muted-foreground transition-colors disabled:opacity-30 text-sm"
+              className="w-8 h-8 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors text-sm font-bold disabled:opacity-40"
               aria-label="Fechar"
             >
               ✕
             </button>
           )}
+        </div>
 
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto space-y-5">
           {/* ══════════════════════════════════
-              STEP 1 — Formulário
+              STEP 1 — FORMULÁRIO DO COMPRADOR
           ══════════════════════════════════ */}
           {step === "form" && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-              <h2 className="text-2xl font-display font-bold mb-1">Finalizar Compra</h2>
-              <p className="text-sm text-muted-foreground mb-5 truncate">{raffleTitle}</p>
-
-              {/* Resumo */}
-              <div className="bg-muted/40 rounded-2xl p-4 mb-5 border border-border/50">
+            <div className="space-y-5">
+              {/* Card Resumo do Pedido */}
+              <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 space-y-3">
                 {promotionName && (
-                  <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-primary">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">
                     <span>📦</span>
-                    <span>{promotionName}</span>
+                    <span>Pacote: {promotionName}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center text-sm mb-2">
-                  <span className="text-muted-foreground">Quantidade</span>
-                  <span className="font-bold">{numbers.length} número{numbers.length !== 1 ? "s" : ""}</span>
+
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground">Quantidade selecionada:</span>
+                  <span className="font-bold text-foreground">
+                    {numbers.length} cota{numbers.length > 1 ? "s" : ""}
+                  </span>
                 </div>
-                <div className="text-xs text-muted-foreground leading-relaxed mb-3 max-h-16 overflow-y-auto">
-                  {numbers.map((n) => String(n).padStart(3, "0")).join(" · ")}
+
+                <div className="max-h-16 overflow-y-auto pr-1 flex flex-wrap gap-1">
+                  {numbers.map((n) => (
+                    <span
+                      key={n}
+                      className="px-2 py-0.5 bg-background border border-border/80 rounded-md text-xs font-mono font-bold text-foreground"
+                    >
+                      {String(n).padStart(3, "0")}
+                    </span>
+                  ))}
                 </div>
-                <div className="flex justify-between items-center font-display font-bold text-xl pt-3 border-t border-border/50">
-                  <span>Total</span>
-                  <span className="text-accent">{formatCurrency(totalAmount)}</span>
+
+                <div className="pt-2 border-t border-border/60 flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted-foreground">Total a pagar:</span>
+                  <span className="font-display font-black text-2xl text-amber-600 dark:text-amber-400">
+                    {formatCurrency(totalAmount)}
+                  </span>
                 </div>
               </div>
 
+              {/* Formulário de Dados */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                     Nome Completo <span className="text-destructive">*</span>
                   </label>
                   <input
                     required
                     type="text"
-                    placeholder="Seu nome completo"
+                    placeholder="Ex: João da Silva"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/40 outline-none transition-all text-sm"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-1.5">
-                    WhatsApp <span className="text-destructive">*</span>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    WhatsApp (com DDD) <span className="text-destructive">*</span>
                   </label>
                   <input
                     required
                     type="tel"
                     placeholder="(11) 99999-9999"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/40 outline-none transition-all text-sm"
+                    onChange={handlePhoneChange}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all text-sm"
                   />
-                  <p className="text-xs text-muted-foreground mt-1.5">
-                    Seu comprovante será enviado neste número.
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    📱 O comprovante e seus números serão vinculados a este WhatsApp.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-1.5">
-                    E-mail{" "}
-                    <span className="text-muted-foreground font-normal">(Opcional)</span>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    E-mail <span className="text-muted-foreground font-normal">(Opcional)</span>
                   </label>
                   <input
                     type="email"
                     placeholder="seu@email.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/40 outline-none transition-all text-sm"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all text-sm"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all disabled:opacity-60 shadow-lg mt-2"
-                  style={{
-                    background: isProcessing
-                      ? "var(--muted)"
-                      : "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-                    color: "var(--primary-foreground)",
-                  }}
-                >
-                  {isProcessing ? (
-                    <>
-                      <span className="animate-spin text-lg">⏳</span>
-                      Gerando PIX...
-                    </>
-                  ) : (
-                    <>
-                      <span>⚡</span>
-                      Gerar PIX — {formatCurrency(totalAmount)}
-                    </>
-                  )}
-                </button>
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isProcessing}
+                    className="w-full py-4 rounded-2xl font-display font-black text-base bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25 transition-all active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <span className="animate-spin text-lg">⏳</span>
+                        <span>Gerando QR Code PIX...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Gerar PIX — {formatCurrency(totalAmount)}</span>
+                        <span>⚡</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
+
+              <div className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5 pt-1">
+                <span>🔒</span>
+                <span>Ambiente 100% Criptografado & Seguro</span>
+              </div>
             </div>
           )}
 
           {/* ══════════════════════════════════
-              STEP 2 — QR Code PIX
+              STEP 2 — QR CODE PIX & CONTAGEM
           ══════════════════════════════════ */}
           {step === "pix" && pixData && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-5">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center text-3xl">
-                  🔑
-                </div>
-                <h2 className="text-xl font-display font-bold">Pague com PIX</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Escaneie o QR Code ou copie o código abaixo
-                </p>
-              </div>
-
-              {/* Timer */}
+            <div className="space-y-5 animate-in fade-in duration-300">
+              {/* Countdown Timer Badge */}
               {timeLeft !== null && (
                 <div
-                  className="flex items-center justify-center gap-2 text-sm font-semibold rounded-xl px-4 py-2.5 border"
+                  className="flex items-center justify-between px-4 py-2.5 rounded-2xl border text-xs font-bold"
                   style={{
-                    background: timeLeft < 120 ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
-                    borderColor: timeLeft < 120 ? "rgba(239,68,68,0.3)" : "rgba(34,197,94,0.3)",
-                    color: timeLeft < 120 ? "rgb(220,38,38)" : "rgb(22,163,74)",
+                    background: timeLeft < 180 ? "rgba(239, 68, 68, 0.08)" : "rgba(245, 158, 11, 0.08)",
+                    borderColor: timeLeft < 180 ? "rgba(239, 68, 68, 0.3)" : "rgba(245, 158, 11, 0.3)",
+                    color: timeLeft < 180 ? "#dc2626" : "#d97706",
                   }}
                 >
-                  <span>⏱</span>
-                  <span>Expira em {formatTime(timeLeft)}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>⏱️</span>
+                    <span>Reserva temporária:</span>
+                  </span>
+                  <span className="font-mono text-sm tracking-wider">
+                    {formatTime(timeLeft)}
+                  </span>
                 </div>
               )}
 
-              {/* QR Code */}
-              <div className="flex justify-center p-4 bg-white rounded-2xl border border-border shadow-inner">
+              {/* QR Code Frame */}
+              <div className="flex flex-col items-center justify-center p-5 bg-white rounded-3xl border-2 border-dashed border-amber-500/40 shadow-inner">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`data:image/png;base64,${pixData.qrCodeBase64}`}
                   alt="QR Code PIX"
-                  className="w-52 h-52 object-contain"
+                  className="w-56 h-56 object-contain"
                 />
+                <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                  Abra o app do seu banco e escaneie o código
+                </p>
               </div>
 
               {/* PIX Copia e Cola */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                  PIX Copia e Cola
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Ou copie a chave PIX Copia e Cola
                 </label>
-                <div className="flex rounded-xl overflow-hidden border border-border">
+                <div className="flex rounded-2xl overflow-hidden border border-border bg-background shadow-xs">
                   <input
                     type="text"
                     readOnly
                     value={pixData.copyPaste}
-                    className="flex-1 px-3 py-3 bg-muted text-xs outline-none min-w-0 truncate"
+                    className="flex-1 px-3.5 py-3 bg-transparent text-xs font-mono outline-none min-w-0 truncate text-foreground"
                   />
                   <button
                     onClick={copyToClipboard}
-                    className="shrink-0 px-5 font-bold text-sm transition-all"
-                    style={{
-                      background: copied
-                        ? "rgb(22,163,74)"
-                        : "linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)",
-                      color: "white",
-                    }}
+                    className={`shrink-0 px-5 font-bold text-xs transition-all flex items-center gap-1.5 text-white ${
+                      copied
+                        ? "bg-emerald-600"
+                        : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                    }`}
                   >
-                    {copied ? "✓ Copiado" : "Copiar"}
+                    {copied ? (
+                      <>
+                        <span>✓</span>
+                        <span>Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>📋</span>
+                        <span>Copiar</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
 
-              {/* Polling indicator */}
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Aguardando confirmação do pagamento...
+              {/* Indicador de Espera do Webhook */}
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/70 flex items-center justify-center gap-2.5 text-xs text-muted-foreground">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="font-medium">Aguardando confirmação bancária em tempo real...</span>
               </div>
 
+              {/* Botão de fallback */}
               <button
                 onClick={() => router.push(`/checkout/sucesso/${orderId}`)}
-                className="w-full py-3 rounded-xl border border-border font-semibold text-sm text-muted-foreground hover:bg-muted transition-colors"
+                className="w-full py-3 rounded-2xl border border-border font-semibold text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               >
-                Já paguei, ver meu pedido →
+                Já realizei o pagamento →
               </button>
             </div>
           )}
 
           {/* ══════════════════════════════════
-              STEP 3 — Pagamento Confirmado 🎉
+              STEP 3 — SUCESSO & COMPROVANTE 🎉
           ══════════════════════════════════ */}
           {step === "confirmed" && (
-            <div className="animate-in fade-in zoom-in-95 duration-500 text-center space-y-5 py-4">
-              <div
-                className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl shadow-xl"
-                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}
-              >
+            <div className="animate-in zoom-in-95 duration-400 text-center space-y-5 py-3">
+              <div className="w-20 h-20 mx-auto rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center text-4xl shadow-lg">
                 🎉
               </div>
+
               <div>
-                <h2 className="text-2xl font-display font-bold text-green-600">
+                <h3 className="text-2xl font-display font-black text-emerald-600 dark:text-emerald-400">
                   Pagamento Confirmado!
-                </h2>
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Seus{" "}
-                  <strong className="text-foreground">{numbers.length} número{numbers.length !== 1 ? "s" : ""}</strong>{" "}
-                  estão garantidos para o sorteio.
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Suas cotas foram vinculadas ao seu nome com sucesso. Boa sorte!
                 </p>
               </div>
 
-              <div className="bg-muted/40 rounded-2xl p-4 border border-border/50 text-sm space-y-2 text-left">
-                <div className="font-semibold text-muted-foreground text-xs uppercase tracking-wider mb-2">
-                  Seus números
-                </div>
-                <div className="flex flex-wrap gap-1.5">
+              {/* Cotas Garantidas */}
+              <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 text-left space-y-2">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+                  Seus números oficiais:
+                </span>
+                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                   {numbers.map((n) => (
                     <span
                       key={n}
-                      className="bg-green-100 text-green-800 border border-green-200 px-2.5 py-1 rounded-lg text-xs font-bold"
+                      className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-mono font-black text-xs rounded-lg"
                     >
                       {String(n).padStart(3, "0")}
                     </span>
@@ -430,23 +475,25 @@ export function CheckoutModal({
                 </div>
               </div>
 
-              <div className="space-y-3">
+              {/* Ações */}
+              <div className="space-y-2.5 pt-2">
                 {whatsappLink && (
                   <a
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95"
-                    style={{ background: "linear-gradient(135deg, #25D366, #128C7E)" }}
+                    className="w-full py-4 rounded-2xl font-display font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all active:scale-98"
                   >
-                    💬 Confirmar no WhatsApp
+                    <span>💬</span>
+                    <span>Enviar Comprovante ao Vendedor</span>
                   </a>
                 )}
+
                 <button
                   onClick={() => router.push(`/checkout/sucesso/${orderId}`)}
-                  className="w-full py-3 rounded-xl border border-border font-semibold text-sm hover:bg-muted transition-colors"
+                  className="w-full py-3 rounded-2xl border border-border font-bold text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
-                  Ver detalhes do pedido
+                  Ver Recibo Completo
                 </button>
               </div>
             </div>
