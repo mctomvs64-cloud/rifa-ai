@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 const registerSchema = z.object({
   name: z.string().min(2, "Nome muito curto"),
   email: z.string().email("Email inválido"),
