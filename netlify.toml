@@ -8,13 +8,9 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    edgeFunctionDir = ".netlify/edge-functions"
 
 [functions]
+  directory = ".netlify/functions-internal"
   node_bundler = "esbuild"
-  included_files = ["prisma/**", "node_modules/@prisma/client/**"]
-
-[[redirects]]
-  from = "/*"
-  to = "/:splat"
-  status = 200
-  conditions = {Role = ["admin", "seller", "buyer"]}

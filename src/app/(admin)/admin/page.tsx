@@ -47,22 +47,34 @@ export default async function AdminDashboard() {
           <h1 className="font-display text-3xl font-bold">Admin: Visão Geral</h1>
           <p className="text-muted-foreground">Controle central da plataforma RifaAI</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/rifas"
+            className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3.5 py-2 rounded-lg font-medium text-sm transition-colors"
+          >
+            🎟️ Rifas
+          </Link>
+          <Link
+            href="/admin/repasses"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
+          >
+            💰 Repasses
+          </Link>
           <Link
             href="/admin/promocoes"
-            className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            className="bg-accent hover:bg-accent/90 text-white px-3.5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
           >
             🎁 Promoções
           </Link>
           <Link
             href="/admin/vendedores"
-            className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg font-medium transition-colors border"
+            className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3.5 py-2 rounded-lg font-medium text-sm transition-colors border"
           >
-            Gerenciar Vendedores
+            👥 Vendedores
           </Link>
           <Link
             href="/admin/configuracoes"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
           >
             ⚙️ Configurações
           </Link>
