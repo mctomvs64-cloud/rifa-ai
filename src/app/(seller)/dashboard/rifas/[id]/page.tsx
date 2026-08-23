@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { GenerateNumbersButton } from "@/components/raffle/generate-numbers-button";
 import { ImageUploadForm } from "@/components/raffle/image-upload-form";
 import { PublishRaffleButton } from "@/components/raffle/publish-raffle-button";
+import { EditRaffleModal } from "@/components/raffle/edit-raffle-modal";
+import { DeleteRaffleButton } from "@/components/raffle/delete-raffle-button";
 
 export default async function SellerManageRafflePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -34,14 +36,15 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Cabeçalho */}
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h1 className="font-display text-3xl font-bold">{raffle.title}</h1>
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-              ${raffle.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : ''}
+              ${raffle.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : ''}
               ${raffle.status === 'DRAFT' ? 'bg-gray-100 text-gray-800' : ''}
-              ${raffle.status === 'CLOSED' ? 'bg-yellow-100 text-yellow-800' : ''}
+              ${raffle.status === 'CLOSED' ? 'bg-amber-100 text-amber-800' : ''}
+              ${raffle.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : ''}
             `}>
               {raffle.status}
             </span>
@@ -51,17 +54,35 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <EditRaffleModal
+            raffle={{
+              id: raffle.id,
+              title: raffle.title,
+              description: raffle.description,
+              prize: raffle.prize,
+              pricePerNumber: Number(raffle.pricePerNumber),
+              minNumbers: raffle.minNumbers,
+              maxNumbers: raffle.maxNumbers,
+              whatsappNumber: raffle.whatsappNumber,
+              status: raffle.status,
+            }}
+          />
           {raffle.status === "DRAFT" && (
             <PublishRaffleButton raffleId={raffle.id} />
           )}
           <Link
             href={`/rifas/${raffle.slug}`}
             target="_blank"
-            className="border bg-background hover:bg-muted text-foreground font-semibold px-4 py-2 rounded-lg"
+            className="border bg-background hover:bg-muted text-foreground font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
           >
             Ver Página
           </Link>
+          <DeleteRaffleButton
+            raffleId={raffle.id}
+            raffleTitle={raffle.title}
+            redirectUrl={session.user.role === "ADMIN" ? "/admin/rifas" : "/dashboard"}
+          />
         </div>
       </div>
 

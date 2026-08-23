@@ -8,16 +8,31 @@ async function main() {
   const newPassword = "99083160";
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
+  await db.user.updateMany({
+    where: {
+      OR: [
+        { email },
+        { name: { contains: "lucas", mode: "insensitive" } }
+      ]
+    },
+    data: {
+      name: "Tom v.s",
+      role: "ADMIN",
+      status: "ACTIVE"
+    }
+  });
+
   await db.user.upsert({
     where: { email },
     update: {
+      name: "Tom v.s",
       password: hashedPassword,
       role: "ADMIN",
       status: "ACTIVE"
     },
     create: {
       email,
-      name: "Super Admin",
+      name: "Tom v.s",
       password: hashedPassword,
       role: "ADMIN",
       status: "ACTIVE"

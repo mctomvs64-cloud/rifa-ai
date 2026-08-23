@@ -4,6 +4,9 @@ import { formatCurrency } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
+import { EditRaffleModal } from "@/components/raffle/edit-raffle-modal";
+import { DeleteRaffleButton } from "@/components/raffle/delete-raffle-button";
+
 export default async function MonitoramentoRifasPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") notFound();
@@ -68,13 +71,39 @@ export default async function MonitoramentoRifasPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <Link
-                    href={`/rifas/${raffle.slug}`}
-                    target="_blank"
-                    className="text-primary hover:underline text-xs font-medium"
-                  >
-                    Ver Página
-                  </Link>
+                  <div className="flex items-center justify-end gap-2">
+                    <Link
+                      href={`/dashboard/rifas/${raffle.id}`}
+                      className="px-2.5 py-1.5 bg-muted hover:bg-muted/80 rounded-md text-xs font-semibold text-foreground transition-colors"
+                    >
+                      Painel
+                    </Link>
+                    <EditRaffleModal
+                      raffle={{
+                        id: raffle.id,
+                        title: raffle.title,
+                        description: raffle.description,
+                        prize: raffle.prize,
+                        pricePerNumber: Number(raffle.pricePerNumber),
+                        minNumbers: raffle.minNumbers,
+                        maxNumbers: raffle.maxNumbers,
+                        whatsappNumber: raffle.whatsappNumber,
+                        status: raffle.status,
+                      }}
+                    />
+                    <DeleteRaffleButton
+                      raffleId={raffle.id}
+                      raffleTitle={raffle.title}
+                      redirectUrl="/admin/rifas"
+                    />
+                    <Link
+                      href={`/rifas/${raffle.slug}`}
+                      target="_blank"
+                      className="text-primary hover:underline text-xs font-medium px-2 py-1"
+                    >
+                      Ver
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}
