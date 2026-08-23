@@ -1,14 +1,13 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
 import { useToast } from "@/components/ui/toast-context";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -132,5 +131,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="space-y-6">Carregando...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
