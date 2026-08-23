@@ -14,7 +14,7 @@ const updateSchema = z.object({
 
 async function checkAdminAuth() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN" || session.user.email !== "mctomvs64@gmail.com") {
+  if (!session?.user || session.user.role !== "ADMIN") {
     return null;
   }
   return session;

@@ -1,27 +1,84 @@
-import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { notFound } from "next/navigation";
+"use client";
 
-export default async function AdminConfiguracoesPage() {
-  const session = await auth();
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/toast-context";
 
-  if (!session?.user || session.user.role !== "ADMIN" || session.user.email !== "mctomvs64@gmail.com") {
-    notFound();
-  }
-
-  const settings = await db.settings.findMany({
-    orderBy: { key: "asc" },
+export default function AdminConfiguracoesPage() {
+  const { addToast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    platform_fee_percent: "5",
+    reservation_minutes: "15",
+    require_seller_approval: false,
   });
 
-  const platformFee = settings.find((s) => s.key === "platform_fee_percent");
-  const reservationMinutes = settings.find((s) => s.key === "reservation_minutes");
-  const requireSellerApproval = settings.find((s) => s.key === "require_seller_approval");
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/admin/configuracoes");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.settings) {
+            setFormData({
+              platform_fee_percent: data.settings.platform_fee_percent ?? "5",
+              reservation_minutes: data.settings.reservation_minutes ?? "15",
+              require_seller_approval: data.settings.require_seller_approval === "true",
+            });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      const res = await fetch("/api/admin/configuracoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        addToast(data.error || "Erro ao salvar configurações", "error");
+        return;
+      }
+
+      addToast("Configurações atualizadas com sucesso!", "success");
+    } catch {
+      addToast("Erro ao conectar com o servidor.", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center text-muted-foreground">
+        <div className="animate-spin text-3xl mb-3">⚙️</div>
+        <p>Carregando configurações da plataforma...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="font-display text-3xl font-bold mb-8">Configurações da Plataforma</h1>
+      <div className="mb-8">
+        <h1 className="font-display text-3xl font-bold">Configurações da Plataforma</h1>
+        <p className="text-muted-foreground">Gerencie as regras financeiras e permissões de vendedores.</p>
+      </div>
 
-      <form action="/api/admin/configuracoes" method="POST" className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-card border rounded-xl p-6 shadow-sm space-y-6">
           <h2 className="font-semibold text-lg border-b pb-2">Financeiro</h2>
 
@@ -34,8 +91,9 @@ export default async function AdminConfiguracoesPage() {
                 step="0.01"
                 min="0"
                 max="50"
-                defaultValue={platformFee?.value ?? "5"}
-                className="w-32 px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                value={formData.platform_fee_percent}
+                onChange={(e) => setFormData({ ...formData, platform_fee_percent: e.target.value })}
+                className="w-32 px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all text-foreground"
               />
               <span className="text-muted-foreground">% por transação</span>
             </div>
@@ -52,8 +110,9 @@ export default async function AdminConfiguracoesPage() {
                 name="reservation_minutes"
                 min="1"
                 max="120"
-                defaultValue={reservationMinutes?.value ?? "15"}
-                className="w-32 px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                value={formData.reservation_minutes}
+                onChange={(e) => setFormData({ ...formData, reservation_minutes: e.target.value })}
+                className="w-32 px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all text-foreground"
               />
               <span className="text-muted-foreground">minutos</span>
             </div>
@@ -64,31 +123,40 @@ export default async function AdminConfiguracoesPage() {
         </div>
 
         <div className="bg-card border rounded-xl p-6 shadow-sm space-y-6">
-          <h2 className="font-semibold text-lg border-b pb-2">Cadastro de Vendedores</h2>
+          <h2 className="font-semibold text-lg border-b pb-2">Autorização de Vendedores</h2>
 
           <div className="flex items-center gap-4">
             <input
               type="checkbox"
               id="require_seller_approval"
               name="require_seller_approval"
-              defaultChecked={requireSellerApproval?.value === "true"}
-              className="w-5 h-5 text-primary border-border rounded focus:ring-primary"
+              checked={formData.require_seller_approval}
+              onChange={(e) => setFormData({ ...formData, require_seller_approval: e.target.checked })}
+              className="w-5 h-5 text-primary border-border rounded focus:ring-primary cursor-pointer"
             />
-            <label htmlFor="require_seller_approval" className="text-sm font-medium cursor-pointer">
+            <label htmlFor="require_seller_approval" className="text-sm font-medium cursor-pointer text-foreground">
               Exigir aprovação manual para novos vendedores
             </label>
           </div>
           <p className="text-xs text-muted-foreground ml-9">
-            Se ativado, novos vendedores ficam com status PENDING até aprovação do admin
+            Se desativado, qualquer vendedor pode criar e publicar rifas imediatamente após o cadastro. Se ativado, o vendedor precisa ser aprovado no painel.
           </p>
         </div>
 
         <div className="pt-4 flex justify-end gap-3 border-t">
           <button
             type="submit"
-            className="px-8 py-2 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors"
+            disabled={isSaving}
+            className="px-8 py-2.5 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            Salvar Configurações
+            {isSaving ? (
+              <>
+                <span className="animate-spin text-sm">⏳</span>
+                <span>Salvando...</span>
+              </>
+            ) : (
+              "Salvar Configurações"
+            )}
           </button>
         </div>
       </form>

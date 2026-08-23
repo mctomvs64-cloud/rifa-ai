@@ -42,6 +42,12 @@ export default function AdminSellerEditPage() {
     }
   };
 
+  useEffect(() => {
+    if (sellerId) {
+      fetchSeller();
+    }
+  }, [sellerId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);

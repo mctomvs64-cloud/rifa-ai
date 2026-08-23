@@ -5,17 +5,36 @@ import { z } from "zod";
 import { applySecurityHeaders } from "@/lib/security/headers";
 
 const updateSettingsSchema = z.object({
-  platform_fee_percent: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
-  reservation_minutes: z.string().regex(/^\d+$/).optional(),
-  require_seller_approval: z.string().optional(),
+  platform_fee_percent: z.union([z.string(), z.number()]).optional(),
+  reservation_minutes: z.union([z.string(), z.number()]).optional(),
+  require_seller_approval: z.union([z.string(), z.boolean()]).optional(),
 });
 
 async function checkAdminAuth() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN" || session.user.email !== "mctomvs64@gmail.com") {
+  if (!session?.user || session.user.role !== "ADMIN") {
     return null;
   }
   return session;
+}
+
+export async function GET() {
+  const session = await checkAdminAuth();
+  if (!session) {
+    return applySecurityHeaders(NextResponse.json({ error: "Não autorizado" }, { status: 403 }));
+  }
+
+  try {
+    const settings = await db.settings.findMany();
+    const configMap: Record<string, string> = {};
+    settings.forEach((s) => {
+      configMap[s.key] = s.value;
+    });
+    return applySecurityHeaders(NextResponse.json({ settings: configMap }));
+  } catch (error) {
+    console.error("[Admin Config GET] Erro:", error);
+    return applySecurityHeaders(NextResponse.json({ error: "Erro ao buscar configurações" }, { status: 500 }));
+  }
 }
 
 export async function POST(req: Request) {
@@ -25,9 +44,17 @@ export async function POST(req: Request) {
   }
 
   try {
-    const formData = await req.formData();
-    const data = Object.fromEntries(formData.entries());
-    const parsed = updateSettingsSchema.safeParse(data);
+    let rawData: Record<string, any> = {};
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      rawData = await req.json();
+    } else {
+      const formData = await req.formData();
+      rawData = Object.fromEntries(formData.entries());
+    }
+
+    const parsed = updateSettingsSchema.safeParse(rawData);
 
     if (!parsed.success) {
       return applySecurityHeaders(
@@ -35,43 +62,52 @@ export async function POST(req: Request) {
       );
     }
 
+    const data = parsed.data;
     const updates = [];
 
-    if (parsed.data.platform_fee_percent !== undefined) {
+    if (data.platform_fee_percent !== undefined) {
+      const val = String(data.platform_fee_percent);
       updates.push(
         db.settings.upsert({
           where: { key: "platform_fee_percent" },
-          update: { value: parsed.data.platform_fee_percent },
-          create: { key: "platform_fee_percent", value: parsed.data.platform_fee_percent },
+          update: { value: val },
+          create: { id: "platform_fee_percent", key: "platform_fee_percent", value: val },
         })
       );
     }
 
-    if (parsed.data.reservation_minutes !== undefined) {
+    if (data.reservation_minutes !== undefined) {
+      const val = String(data.reservation_minutes);
       updates.push(
         db.settings.upsert({
           where: { key: "reservation_minutes" },
-          update: { value: parsed.data.reservation_minutes },
-          create: { key: "reservation_minutes", value: parsed.data.reservation_minutes },
+          update: { value: val },
+          create: { id: "reservation_minutes", key: "reservation_minutes", value: val },
         })
       );
     }
 
-    if (parsed.data.require_seller_approval !== undefined) {
+    if (data.require_seller_approval !== undefined) {
+      const val = (data.require_seller_approval === true || data.require_seller_approval === "true" || data.require_seller_approval === "on") ? "true" : "false";
       updates.push(
         db.settings.upsert({
           where: { key: "require_seller_approval" },
-          update: { value: parsed.data.require_seller_approval },
-          create: { key: "require_seller_approval", value: parsed.data.require_seller_approval },
+          update: { value: val },
+          create: { id: "require_seller_approval", key: "require_seller_approval", value: val },
         })
       );
     }
 
     await Promise.all(updates);
 
-    return applySecurityHeaders(NextResponse.json({ success: true, message: "Configurações salvas" }));
+    // Se for requisição HTML tradicional (não-JSON/AJAX), redireciona de volta
+    if (!contentType.includes("application/json") && req.headers.get("accept")?.includes("text/html")) {
+      return NextResponse.redirect(new URL("/admin/configuracoes?saved=true", req.url));
+    }
+
+    return applySecurityHeaders(NextResponse.json({ success: true, message: "Configurações salvas com sucesso!" }));
   } catch (error) {
     console.error("[Admin Config] Erro:", error);
-    return applySecurityHeaders(NextResponse.json({ error: "Erro interno" }, { status: 500 }));
+    return applySecurityHeaders(NextResponse.json({ error: "Erro interno ao salvar configurações" }, { status: 500 }));
   }
 }
