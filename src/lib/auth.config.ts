@@ -24,5 +24,6 @@ export const authConfig = {
       return session;
     },
   },
+  trustHost: true,
   providers: [], // configurado no auth.ts para não quebrar Edge Runtime
 } satisfies NextAuthConfig;
