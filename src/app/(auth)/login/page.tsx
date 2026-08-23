@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,8 +34,7 @@ export default function LoginPage() {
       }
 
       addToast("Login realizado com sucesso!", "success");
-      // Next.js middleware vai redirecionar baseado na role
-      router.push("/dashboard");
+      router.push(callbackUrl);
       router.refresh();
     } catch (error) {
       addToast("Erro ao conectar. Tente novamente.", "error");
@@ -97,7 +98,7 @@ export default function LoginPage() {
       </div>
 
       <button
-        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        onClick={() => signIn("google", { callbackUrl })}
         className="w-full py-2.5 bg-background border hover:bg-muted text-foreground font-medium rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">

@@ -52,7 +52,10 @@ export default middleware((req: NextRequest & { auth: { user?: { role?: string }
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL(`/login?callbackUrl=${pathname}`, req.url));
     }
-    if (userRole !== "SELLER" && userRole !== "ADMIN") {
+    if (userRole === "ADMIN") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+    if (userRole !== "SELLER") {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();
