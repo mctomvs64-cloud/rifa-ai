@@ -36,12 +36,17 @@ export default middleware((req: NextRequest & { auth: { user?: { role?: string }
     return NextResponse.next();
   }
 
-  // Rotas do painel admin — apenas ADMIN
+  // Rotas do painel admin — apenas ADMIN com email específico
   if (pathname.startsWith("/admin")) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL(`/login?callbackUrl=${pathname}`, req.url));
     }
     if (userRole !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+    // Verificar se é o email do super admin
+    const userEmail = session?.user?.email;
+    if (userEmail !== "mctomvs64@gmail.com") {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();

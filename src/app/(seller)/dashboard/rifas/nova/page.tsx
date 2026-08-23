@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 export default function CreateRafflePage() {
   const router = useRouter();
@@ -10,11 +11,14 @@ export default function CreateRafflePage() {
   const [formData, setFormData] = useState({
     title: "",
     prize: "",
+    description: "",
     pricePerNumber: "",
     totalNumbers: "100",
     minNumbers: "1",
     maxNumbers: "50",
     whatsappNumber: "",
+    coverImage: "",
+    images: [] as string[],
   });
 
   const [promotions, setPromotions] = useState<{ quantity: string; promoPrice: string }[]>([]);
@@ -39,10 +43,10 @@ export default function CreateRafflePage() {
 
     try {
       const validPromotions = promotions
-        .filter(p => p.quantity && p.promoPrice)
-        .map(p => ({
+        .filter((p) => p.quantity && p.promoPrice)
+        .map((p) => ({
           quantity: parseInt(p.quantity),
-          promoPrice: Number(p.promoPrice.replace(",", "."))
+          promoPrice: Number(p.promoPrice.replace(",", ".")),
         }));
 
       const response = await fetch("/api/rifas", {
@@ -50,12 +54,15 @@ export default function CreateRafflePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: formData.title,
+          description: formData.description,
           prize: formData.prize,
           pricePerNumber: Number(formData.pricePerNumber.replace(",", ".")),
           totalNumbers: parseInt(formData.totalNumbers),
           minNumbers: parseInt(formData.minNumbers),
           maxNumbers: parseInt(formData.maxNumbers),
           whatsappNumber: formData.whatsappNumber,
+          coverImage: formData.coverImage || null,
+          images: formData.images,
           promotions: validPromotions,
         }),
       });
@@ -79,6 +86,14 @@ export default function CreateRafflePage() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleCoverChange = (urls: string[]) => {
+    setFormData((prev) => ({ ...prev, coverImage: urls[0] || "" }));
+  };
+
+  const handleImagesChange = (urls: string[]) => {
+    setFormData((prev) => ({ ...prev, images: urls }));
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="font-display text-3xl font-bold mb-2">Criar Nova Rifa</h1>
@@ -87,11 +102,33 @@ export default function CreateRafflePage() {
       </p>
 
       <form onSubmit={handleSubmit} className="bg-card border rounded-xl p-6 md:p-8 shadow-sm space-y-6">
-        
+        {/* Imagens */}
+        <div className="space-y-4 pt-4">
+          <h2 className="font-semibold text-lg border-b pb-2">Imagens da Rifa</h2>
+
+          <ImageUpload
+            label="Imagem de Capa (Principal)"
+            onImagesChange={handleCoverChange}
+            maxFiles={1}
+            initialImages={formData.coverImage ? [formData.coverImage] : []}
+          />
+
+          <ImageUpload
+            label="Galeria de Imagens (Opcional)"
+            onImagesChange={handleImagesChange}
+            maxFiles={10}
+            initialImages={formData.images}
+          />
+
+          <p className="text-xs text-muted-foreground">
+            A imagem de capa será usada nas listagens e no checkout. A galeria aparece na página da rifa.
+          </p>
+        </div>
+
         {/* Dados Principais */}
         <div className="space-y-4">
           <h2 className="font-semibold text-lg border-b pb-2">Informações Básicas</h2>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">Título da Rifa *</label>
             <input
@@ -101,6 +138,18 @@ export default function CreateRafflePage() {
               onChange={handleChange}
               placeholder="Ex: iPhone 15 Pro Max + R$ 5.000 no PIX"
               className="w-full px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Descrição Detalhada</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Descreva a rifa, regras, condições de entrega, etc."
+              className="w-full px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all resize-none"
             />
           </div>
 
@@ -120,7 +169,7 @@ export default function CreateRafflePage() {
         {/* Configurações Financeiras e Cotas */}
         <div className="space-y-4 pt-4">
           <h2 className="font-semibold text-lg border-b pb-2">Valores e Cotas</h2>
-          
+
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Valor por número (R$) *</label>
@@ -136,7 +185,7 @@ export default function CreateRafflePage() {
                 className="w-full px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium mb-1">Total de Números (Livre) *</label>
               <input
@@ -191,7 +240,7 @@ export default function CreateRafflePage() {
               + Adicionar Pacote
             </button>
           </div>
-          
+
           <p className="text-sm text-muted-foreground mb-4">
             Crie descontos para quem comprar mais números. Ex: "Compre 10 por R$ 4,50"
           </p>
@@ -245,7 +294,7 @@ export default function CreateRafflePage() {
         {/* Contato */}
         <div className="space-y-4 pt-4">
           <h2 className="font-semibold text-lg border-b pb-2">Contato</h2>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">WhatsApp para receber comprovantes</label>
             <p className="text-xs text-muted-foreground mb-2">
@@ -292,7 +341,6 @@ export default function CreateRafflePage() {
             {isSubmitting ? "Criando..." : "Criar Rascunho →"}
           </button>
         </div>
-
       </form>
     </div>
   );

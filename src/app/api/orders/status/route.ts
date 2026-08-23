@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { releaseExpiredReservations } from "@/lib/reservations";
+import { checkoutRateLimiter } from "@/lib/security/rate-limit";
+import { applySecurityHeaders } from "@/lib/security/headers";
 
 /**
  * GET /api/orders/status?orderId=xxx
@@ -9,10 +11,13 @@ import { releaseExpiredReservations } from "@/lib/reservations";
  * Retorna o status atual do pedido no banco (atualizado pelo webhook do MP).
  */
 export async function GET(req: NextRequest) {
+  const rateLimitRes = await checkoutRateLimiter(req);
+  if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
+
   const orderId = req.nextUrl.searchParams.get("orderId");
 
   if (!orderId) {
-    return NextResponse.json({ error: "orderId obrigatório" }, { status: 400 });
+    return applySecurityHeaders(NextResponse.json({ error: "orderId obrigatório" }, { status: 400 }));
   }
 
   let order = await db.order.findUnique({
@@ -40,21 +45,22 @@ export async function GET(req: NextRequest) {
     order = { ...order, status: "EXPIRED" };
   }
 
-  return NextResponse.json(
-    {
-      orderId: order.id,
-      status: order.status,   // "PENDING" | "PAID" | "CANCELLED" | "EXPIRED"
-      paidAt: order.paidAt?.toISOString() ?? null,
-      expiresAt: order.expiresAt?.toISOString() ?? null,
-      whatsappLink: order.whatsappLink,
-      raffle: order.raffle,
-      numbers: order.numbers.map((n) => n.number),
-    },
-    {
-      headers: {
-        // Sem cache — precisa ser sempre fresco
-        "Cache-Control": "no-store, no-cache, must-revalidate",
+  return applySecurityHeaders(
+    NextResponse.json(
+      {
+        orderId: order.id,
+        status: order.status,
+        paidAt: order.paidAt?.toISOString() ?? null,
+        expiresAt: order.expiresAt?.toISOString() ?? null,
+        whatsappLink: order.whatsappLink,
+        raffle: order.raffle,
+        numbers: order.numbers.map((n) => n.number),
       },
-    }
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    )
   );
 }

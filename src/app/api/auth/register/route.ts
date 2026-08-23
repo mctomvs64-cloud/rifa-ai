@@ -4,6 +4,8 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/utils";
+import { authRateLimiter } from "@/lib/security/rate-limit";
+import { applySecurityHeaders } from "@/lib/security/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +22,9 @@ const registerSchema = z.object({
  * Registra um novo usuário (vendedor ou comprador).
  */
 export async function POST(req: NextRequest) {
+  const rateLimitRes = await authRateLimiter(req);
+  if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
+
   try {
     const body = await req.json();
     const parsed = registerSchema.safeParse(body);
@@ -63,15 +68,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { user, message: "Conta criada com sucesso!" },
-      { status: 201 }
+    return applySecurityHeaders(
+      NextResponse.json(
+        { user, message: "Conta criada com sucesso!" },
+        { status: 201 }
+      )
     );
   } catch (error) {
     console.error("[Register] Erro:", error);
-    return NextResponse.json(
-      { error: "Erro interno. Tente novamente." },
-      { status: 500 }
+    return applySecurityHeaders(
+      NextResponse.json(
+        { error: "Erro interno. Tente novamente." },
+        { status: 500 }
+      )
     );
   }
 }

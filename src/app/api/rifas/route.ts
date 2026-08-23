@@ -4,6 +4,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { generateUniqueSlug, calculateFees } from "@/lib/utils";
+import { apiRateLimiter } from "@/lib/security/rate-limit";
+import { applySecurityHeaders } from "@/lib/security/headers";
 
 const createRaffleSchema = z.object({
   title: z.string().min(3, "Título muito curto").max(100),
@@ -28,10 +30,13 @@ const createRaffleSchema = z.object({
  * Lista rifas do vendedor autenticado.
  */
 export async function GET(req: NextRequest) {
+  const rateLimitRes = await apiRateLimiter(req);
+  if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
+
   const session = await auth();
 
   if (!session?.user) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    return applySecurityHeaders(NextResponse.json({ error: "Não autorizado" }, { status: 401 }));
   }
 
   const raffles = await db.raffle.findMany({
@@ -49,7 +54,7 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ raffles });
+  return applySecurityHeaders(NextResponse.json({ raffles }));
 }
 
 /**
@@ -57,16 +62,21 @@ export async function GET(req: NextRequest) {
  * Cria uma nova rifa para o vendedor autenticado.
  */
 export async function POST(req: NextRequest) {
+  const rateLimitRes = await apiRateLimiter(req);
+  if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
+
   const session = await auth();
 
   if (!session?.user) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    return applySecurityHeaders(NextResponse.json({ error: "Não autorizado" }, { status: 401 }));
   }
 
   if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
-    return NextResponse.json(
-      { error: "Apenas vendedores podem criar rifas" },
-      { status: 403 }
+    return applySecurityHeaders(
+      NextResponse.json(
+        { error: "Apenas vendedores podem criar rifas" },
+        { status: 403 }
+      )
     );
   }
 
@@ -75,9 +85,11 @@ export async function POST(req: NextRequest) {
     const parsed = createRaffleSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
-        { status: 400 }
+      return applySecurityHeaders(
+        NextResponse.json(
+          { error: "Dados inválidos", details: parsed.error.flatten().fieldErrors },
+          { status: 400 }
+        )
       );
     }
 
@@ -122,9 +134,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ raffle }, { status: 201 });
+    return applySecurityHeaders(NextResponse.json({ raffle }, { status: 201 }));
   } catch (error) {
     console.error("[Rifas POST] Erro:", error);
-    return NextResponse.json({ error: "Erro ao criar rifa" }, { status: 500 });
+    return applySecurityHeaders(NextResponse.json({ error: "Erro ao criar rifa" }, { status: 500 }));
   }
 }

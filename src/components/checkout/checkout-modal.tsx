@@ -193,11 +193,11 @@ export function CheckoutModal({
     return `${m}:${s}`;
   };
 
-  if (!isOpen) return null;
+if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 bg-black/70 backdrop-blur-sm"
     >
       <div
         className="bg-background text-foreground w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border relative overflow-hidden flex flex-col"
@@ -207,7 +207,7 @@ export function CheckoutModal({
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600" />
 
         {/* Modal Header */}
-        <div className="p-6 pb-4 border-b border-border/60 flex items-center justify-between">
+        <div className="p-6 pb-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-lg">
               {step === "form" ? "📝" : step === "pix" ? "⚡" : "🎉"}
@@ -242,7 +242,7 @@ export function CheckoutModal({
           {step === "form" && (
             <div className="space-y-5">
               {/* Card Resumo do Pedido */}
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 space-y-3">
+              <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                 {promotionName && (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">
                     <span>📦</span>
@@ -358,10 +358,10 @@ export function CheckoutModal({
               {/* Countdown Timer Badge */}
               {timeLeft !== null && (
                 <div
-                  className="flex items-center justify-between px-4 py-2.5 rounded-2xl border text-xs font-bold"
+                  className="flex items-center justify-between px-4 py-2.5 rounded-2xl border text-xs font-bold bg-card"
                   style={{
-                    background: timeLeft < 180 ? "rgba(239, 68, 68, 0.08)" : "rgba(245, 158, 11, 0.08)",
-                    borderColor: timeLeft < 180 ? "rgba(239, 68, 68, 0.3)" : "rgba(245, 158, 11, 0.3)",
+                    background: timeLeft < 180 ? "rgba(239, 68, 68, 0.1)" : "rgba(245, 158, 11, 0.1)",
+                    borderColor: timeLeft < 180 ? "rgba(239, 68, 68, 0.4)" : "rgba(245, 158, 11, 0.4)",
                     color: timeLeft < 180 ? "#dc2626" : "#d97706",
                   }}
                 >
@@ -424,7 +424,7 @@ export function CheckoutModal({
               </div>
 
               {/* Indicador de Espera do Webhook */}
-              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/70 flex items-center justify-center gap-2.5 text-xs text-muted-foreground">
+              <div className="p-3.5 rounded-2xl bg-card border border-border flex items-center justify-center gap-2.5 text-xs text-muted-foreground">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
                 <span className="font-medium">Aguardando confirmação bancária em tempo real...</span>
               </div>
@@ -458,7 +458,7 @@ export function CheckoutModal({
               </div>
 
               {/* Cotas Garantidas */}
-              <div className="p-4 rounded-2xl bg-muted/40 border border-border/70 text-left space-y-2">
+              <div className="p-4 rounded-2xl bg-card border border-border text-left space-y-2">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                   Seus números oficiais:
                 </span>

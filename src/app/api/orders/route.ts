@@ -4,6 +4,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { calculateFees } from "@/lib/utils";
 import { releaseExpiredReservations } from "@/lib/reservations";
+import { checkoutRateLimiter } from "@/lib/security/rate-limit";
+import { applySecurityHeaders } from "@/lib/security/headers";
 
 const createOrderSchema = z.object({
   raffleId: z.string(),
@@ -27,6 +29,9 @@ const createOrderSchema = z.object({
  * 6. Retorna QR Code + copia-e-cola
  */
 export async function POST(req: NextRequest) {
+  const rateLimitRes = await checkoutRateLimiter(req);
+  if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
+
   try {
     const body = await req.json();
     const parsed = createOrderSchema.safeParse(body);
@@ -202,27 +207,29 @@ export async function POST(req: NextRequest) {
       // Não cancela o pedido — comprador pode tentar novamente ou pagar manualmente
     }
 
-    return NextResponse.json(
-      {
-        orderId: result.order.id,
-        totalAmount: Number(result.order.totalAmount),
-        expiresAt: result.expiresAt.toISOString(),
-        numbers,
-        pix: {
-          qrCode,
-          qrCodeBase64,
-          copyPaste: pixCopyPaste,
-          paymentId: mpPaymentId,
+    return applySecurityHeaders(
+      NextResponse.json(
+        {
+          orderId: result.order.id,
+          totalAmount: Number(result.order.totalAmount),
+          expiresAt: result.expiresAt.toISOString(),
+          numbers,
+          pix: {
+            qrCode,
+            qrCodeBase64,
+            copyPaste: pixCopyPaste,
+            paymentId: mpPaymentId,
+          },
         },
-      },
-      { status: 201 }
+        { status: 201 }
+      )
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("indisponíveis")) {
-      return NextResponse.json({ error: error.message }, { status: 409 });
+      return applySecurityHeaders(NextResponse.json({ error: error.message }, { status: 409 }));
     }
     console.error("[Orders POST] Erro:", error);
-    return NextResponse.json({ error: "Erro ao criar pedido" }, { status: 500 });
+    return applySecurityHeaders(NextResponse.json({ error: "Erro ao criar pedido" }, { status: 500 }));
   }
 }
 
@@ -231,10 +238,13 @@ export async function POST(req: NextRequest) {
  * Consulta o status de um pedido.
  */
 export async function GET(req: NextRequest) {
+  const rateLimitRes = await checkoutRateLimiter(req);
+  if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
+
   const orderId = req.nextUrl.searchParams.get("orderId");
 
   if (!orderId) {
-    return NextResponse.json({ error: "orderId obrigatório" }, { status: 400 });
+    return applySecurityHeaders(NextResponse.json({ error: "orderId obrigatório" }, { status: 400 }));
   }
 
   const order = await db.order.findUnique({
@@ -255,8 +265,8 @@ export async function GET(req: NextRequest) {
   });
 
   if (!order) {
-    return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 });
+    return applySecurityHeaders(NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 }));
   }
 
-  return NextResponse.json({ order });
+  return applySecurityHeaders(NextResponse.json({ order }));
 }
