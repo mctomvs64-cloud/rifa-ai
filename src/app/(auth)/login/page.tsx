@@ -1,14 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/toast-context";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const { addToast } = useToast();
@@ -23,23 +22,14 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      const res = await signIn("credentials", {
+      await signIn("credentials", {
         email: formData.email,
         password: formData.password,
-        redirect: false,
+        redirect: true,
+        callbackUrl,
       });
-
-      if (res?.error) {
-        addToast("Email ou senha incorretos.", "error");
-        return;
-      }
-
-      addToast("Login realizado com sucesso!", "success");
-      router.push(callbackUrl);
-      router.refresh();
     } catch (error) {
       addToast("Erro ao conectar. Tente novamente.", "error");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -99,7 +89,7 @@ function LoginForm() {
       </div>
 
       <button
-        onClick={() => signIn("google", { callbackUrl })}
+        onClick={() => signIn("google", { redirect: true, callbackUrl })}
         className="w-full py-2.5 bg-background border hover:bg-muted text-foreground font-medium rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
