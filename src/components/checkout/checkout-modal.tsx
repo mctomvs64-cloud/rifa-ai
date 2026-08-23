@@ -197,11 +197,10 @@ export function CheckoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
-      style={{ background: "rgba(3, 7, 18, 0.82)", backdropFilter: "blur(12px)" }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 bg-black/60 backdrop-blur-sm"
     >
       <div
-        className="bg-card text-card-foreground w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border/80 relative overflow-hidden flex flex-col"
+        className="bg-background text-foreground w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border relative overflow-hidden flex flex-col"
         style={{ maxHeight: "95dvh" }}
       >
         {/* Top Accent Line */}

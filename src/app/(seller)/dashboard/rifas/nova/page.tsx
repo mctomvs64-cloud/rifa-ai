@@ -17,11 +17,34 @@ export default function CreateRafflePage() {
     whatsappNumber: "",
   });
 
+  const [promotions, setPromotions] = useState<{ quantity: string; promoPrice: string }[]>([]);
+
+  const handleAddPromotion = () => {
+    setPromotions([...promotions, { quantity: "", promoPrice: "" }]);
+  };
+
+  const handlePromotionChange = (index: number, field: "quantity" | "promoPrice", value: string) => {
+    const updated = [...promotions];
+    updated[index][field] = value;
+    setPromotions(updated);
+  };
+
+  const handleRemovePromotion = (index: number) => {
+    setPromotions(promotions.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const validPromotions = promotions
+        .filter(p => p.quantity && p.promoPrice)
+        .map(p => ({
+          quantity: parseInt(p.quantity),
+          promoPrice: Number(p.promoPrice.replace(",", "."))
+        }));
+
       const response = await fetch("/api/rifas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,6 +56,7 @@ export default function CreateRafflePage() {
           minNumbers: parseInt(formData.minNumbers),
           maxNumbers: parseInt(formData.maxNumbers),
           whatsappNumber: formData.whatsappNumber,
+          promotions: validPromotions,
         }),
       });
 
@@ -114,18 +138,18 @@ export default function CreateRafflePage() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Total de Números *</label>
-              <select
+              <label className="block text-sm font-medium mb-1">Total de Números (Livre) *</label>
+              <input
+                required
+                type="number"
                 name="totalNumbers"
+                min="10"
                 value={formData.totalNumbers}
-                onChange={handleChange as any}
+                onChange={handleChange}
+                placeholder="Ex: 100, 1000, 5500"
                 className="w-full px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-              >
-                <option value="100">100 números (00 a 99)</option>
-                <option value="1000">1.000 números (000 a 999)</option>
-                <option value="10000">10.000 números (0000 a 9999)</option>
-                <option value="100000">100.000 números (00000 a 99999)</option>
-              </select>
+              />
+              <p className="text-xs text-muted-foreground mt-1">Ex: 100 (00 a 99), 1000 (000 a 999).</p>
             </div>
           </div>
 
@@ -155,6 +179,69 @@ export default function CreateRafflePage() {
           </div>
         </div>
 
+        {/* Pacotes Promocionais */}
+        <div className="space-y-4 pt-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h2 className="font-semibold text-lg">Pacotes Promocionais</h2>
+            <button
+              type="button"
+              onClick={handleAddPromotion}
+              className="text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1 rounded-md font-medium transition-colors"
+            >
+              + Adicionar Pacote
+            </button>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mb-4">
+            Crie descontos para quem comprar mais números. Ex: "Compre 10 por R$ 4,50"
+          </p>
+
+          <div className="space-y-3">
+            {promotions.map((promo, index) => (
+              <div key={index} className="flex gap-3 items-start p-3 bg-muted/40 rounded-lg border">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium mb-1">Quantidade de números</label>
+                  <input
+                    type="number"
+                    min="2"
+                    placeholder="Ex: 10"
+                    value={promo.quantity}
+                    onChange={(e) => handlePromotionChange(index, "quantity", e.target.value)}
+                    className="w-full px-3 py-2 bg-background border rounded-md text-sm outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium mb-1">Valor do Pacote (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Ex: 45,00"
+                    value={promo.promoPrice}
+                    onChange={(e) => handlePromotionChange(index, "promoPrice", e.target.value)}
+                    className="w-full px-3 py-2 bg-background border rounded-md text-sm outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <div className="pt-5">
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePromotion(index)}
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                    title="Remover pacote"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+            {promotions.length === 0 && (
+              <div className="text-center py-4 text-sm text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+                Nenhum pacote promocional configurado.
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Contato */}
         <div className="space-y-4 pt-4">
           <h2 className="font-semibold text-lg border-b pb-2">Contato</h2>
@@ -180,7 +267,7 @@ export default function CreateRafflePage() {
             <div className="text-sm font-medium">Potencial de Arrecadação</div>
             <div className="text-xs text-muted-foreground">Caso venda todos os números</div>
           </div>
-          <div className="text-xl font-display font-bold text-green-600 dark:text-green-400">
+          <div className="text-xl font-display font-bold text-emerald-600 dark:text-emerald-400">
             {formData.pricePerNumber && formData.totalNumbers
               ? formatCurrency(
                   Number(formData.pricePerNumber.replace(",", ".")) * Number(formData.totalNumbers)

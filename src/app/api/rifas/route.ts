@@ -17,6 +17,10 @@ const createRaffleSchema = z.object({
   coverImage: z.string().url().optional().nullable(),
   images: z.array(z.string().url()).default([]),
   whatsappNumber: z.string().optional().nullable(),
+  promotions: z.array(z.object({
+    quantity: z.number().min(2),
+    promoPrice: z.number().min(0.5)
+  })).optional().default([]),
 });
 
 /**
@@ -106,6 +110,15 @@ export async function POST(req: NextRequest) {
         platformFeePercent,
         sellerId: session.user.id,
         status: "DRAFT",
+        promotions: data.promotions && data.promotions.length > 0 ? {
+          create: data.promotions.map(p => ({
+            name: `Pacote ${p.quantity} números`,
+            quantity: p.quantity,
+            promoPrice: p.promoPrice,
+            originalPrice: p.quantity * data.pricePerNumber,
+            active: true
+          }))
+        } : undefined,
       },
     });
 

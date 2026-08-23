@@ -43,7 +43,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <Link href="/" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-2">
+        <span className="mr-1">←</span> Voltar para o Início
+      </Link>
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">E-mail</label>
@@ -58,7 +62,12 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Senha</label>
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium">Senha</label>
+            <Link href="/recuperar-senha" className="text-xs text-primary font-medium hover:underline">
+              Esqueci minha senha
+            </Link>
+          </div>
           <input
             type="password"
             required
