@@ -196,83 +196,87 @@ export function CheckoutModal({
     return `${m}:${s}`;
   };
 
-if (!isOpen) return null;
+  if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 bg-black/80 backdrop-blur-sm"
-    >
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      {/* Backdrop escuro sólido */}
+      <div className="absolute inset-0 bg-black/85" onClick={step !== "confirmed" ? onClose : undefined} />
+
+      {/* Modal Container */}
       <div
-        className="bg-background text-foreground w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border relative overflow-hidden flex flex-col"
-        style={{ maxHeight: "95dvh" }}
+        className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+        style={{ maxHeight: "95dvh", background: "#1a1a1a" }}
       >
-        {/* Cover Image Header */}
-        <div className="relative h-40 sm:h-48 bg-slate-900 overflow-hidden">
+        {/* ─── Cover Image Header ─── */}
+        <div className="relative h-44 sm:h-52 overflow-hidden shrink-0">
           {coverImage ? (
-            <img
-              src={coverImage}
-              alt={raffleTitle}
-              className="w-full h-full object-cover opacity-90"
-            />
+            <>
+              <img
+                src={coverImage}
+                alt={raffleTitle}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-black/50 to-transparent" />
+            </>
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950/40 text-amber-400">
-              <span className="text-5xl mb-2">🎟️</span>
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Rifa Oficial</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-amber-950/30">
+              <span className="text-6xl mb-2">🎟️</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Rifa Oficial</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h2 className="text-xl sm:text-2xl font-display font-black text-white drop-shadow-lg truncate">
-              {raffleTitle}
-            </h2>
-            <p className="text-xs text-amber-300 mt-1">
-              {step === "form" ? "Finalizar Reserva" : step === "pix" ? "Pagamento PIX" : "Cotas Confirmadas!"}
-            </p>
-          </div>
-        </div>
 
-        {/* Top Accent Line */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600" />
-
-        {/* Modal Header (compact) */}
-        <div className="p-4 pb-2 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm">
-              {step === "form" ? "📝" : step === "pix" ? "⚡" : "🎉"}
-            </div>
+          {/* Badge de Status */}
+          <div className="absolute top-3 left-3">
+            <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/90 text-white shadow-lg backdrop-blur-sm flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              {step === "form" ? "Finalizar Reserva" : step === "pix" ? "Pagamento PIX" : "Confirmado!"}
+            </span>
           </div>
 
+          {/* Botão Fechar */}
           {step !== "confirmed" && (
             <button
               onClick={onClose}
               disabled={isProcessing}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors text-sm font-bold disabled:opacity-40 backdrop-blur-sm"
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors text-sm font-bold disabled:opacity-40 backdrop-blur-sm border border-white/10"
               aria-label="Fechar"
             >
               ✕
             </button>
           )}
+
+          {/* Título da Rifa sobre a capa */}
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+            <h2 className="text-xl sm:text-2xl font-display font-black text-white drop-shadow-lg line-clamp-2">
+              {raffleTitle}
+            </h2>
+          </div>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-5">
-          {/* ══════════════════════════════════
-              STEP 1 — FORMULÁRIO DO COMPRADOR
-          ══════════════════════════════════ */}
+        {/* ─── Accent Line ─── */}
+        <div className="h-1 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 shrink-0" />
+
+        {/* ─── Modal Body ─── */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5" style={{ background: "#1a1a1a", color: "#e5e5e5" }}>
+
+          {/* ═══════════════════════════════
+              STEP 1 — FORMULÁRIO
+          ═══════════════════════════════ */}
           {step === "form" && (
             <div className="space-y-5">
-              {/* Card Resumo do Pedido */}
-              <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
+              {/* Resumo do Pedido */}
+              <div className="p-4 rounded-2xl space-y-3" style={{ background: "#242424", border: "1px solid #333" }}>
                 {promotionName && (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-bold">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>
                     <span>📦</span>
                     <span>Pacote: {promotionName}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted-foreground">Quantidade selecionada:</span>
-                  <span className="font-bold text-foreground">
+                  <span style={{ color: "#999" }}>Quantidade selecionada:</span>
+                  <span className="font-bold text-white">
                     {numbers.length} cota{numbers.length > 1 ? "s" : ""}
                   </span>
                 </div>
@@ -281,26 +285,27 @@ if (!isOpen) return null;
                   {numbers.map((n) => (
                     <span
                       key={n}
-                      className="px-2 py-0.5 bg-background border border-border/80 rounded-md text-xs font-mono font-bold text-foreground"
+                      className="px-2 py-0.5 rounded-md text-xs font-mono font-bold"
+                      style={{ background: "#333", border: "1px solid #444", color: "#fff" }}
                     >
                       {String(n).padStart(3, "0")}
                     </span>
                   ))}
                 </div>
 
-                <div className="pt-2 border-t border-border/60 flex justify-between items-center">
-                  <span className="text-sm font-bold text-muted-foreground">Total a pagar:</span>
-                  <span className="font-display font-black text-2xl text-amber-600 dark:text-amber-400">
+                <div className="pt-2 flex justify-between items-center" style={{ borderTop: "1px solid #333" }}>
+                  <span className="text-sm font-bold" style={{ color: "#999" }}>Total a pagar:</span>
+                  <span className="font-display font-black text-2xl" style={{ color: "#f59e0b" }}>
                     {formatCurrency(totalAmount)}
                   </span>
                 </div>
               </div>
 
-              {/* Formulário de Dados */}
+              {/* Formulário */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Nome Completo <span className="text-destructive">*</span>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "#888" }}>
+                    Nome Completo <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <input
                     required
@@ -308,13 +313,14 @@ if (!isOpen) return null;
                     placeholder="Ex: João da Silva"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all text-sm"
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                    style={{ background: "#2a2a2a", border: "1px solid #444", color: "#fff" }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    WhatsApp (com DDD) <span className="text-destructive">*</span>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "#888" }}>
+                    WhatsApp (com DDD) <span style={{ color: "#ef4444" }}>*</span>
                   </label>
                   <input
                     required
@@ -322,23 +328,25 @@ if (!isOpen) return null;
                     placeholder="(11) 99999-9999"
                     value={formData.phone}
                     onChange={handlePhoneChange}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all text-sm"
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                    style={{ background: "#2a2a2a", border: "1px solid #444", color: "#fff" }}
                   />
-                  <p className="text-[11px] text-muted-foreground mt-1">
+                  <p className="text-[11px] mt-1" style={{ color: "#666" }}>
                     📱 O comprovante e seus números serão vinculados a este WhatsApp.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    E-mail <span className="text-muted-foreground font-normal">(Opcional)</span>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "#888" }}>
+                    E-mail <span className="font-normal" style={{ color: "#666" }}>(Opcional)</span>
                   </label>
                   <input
                     type="email"
                     placeholder="seu@email.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all text-sm"
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                    style={{ background: "#2a2a2a", border: "1px solid #444", color: "#fff" }}
                   />
                 </div>
 
@@ -346,7 +354,8 @@ if (!isOpen) return null;
                   <button
                     type="submit"
                     disabled={isProcessing}
-                    className="w-full py-4 rounded-2xl font-display font-black text-base bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25 transition-all active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-4 rounded-2xl font-display font-black text-base text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                    style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", boxShadow: "0 8px 24px rgba(245,158,11,0.3)" }}
                   >
                     {isProcessing ? (
                       <>
@@ -363,26 +372,26 @@ if (!isOpen) return null;
                 </div>
               </form>
 
-              <div className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5 pt-1">
+              <div className="text-center text-[11px] flex items-center justify-center gap-1.5 pt-1" style={{ color: "#555" }}>
                 <span>🔒</span>
                 <span>Ambiente 100% Criptografado & Seguro</span>
               </div>
             </div>
           )}
 
-          {/* ══════════════════════════════════
-              STEP 2 — QR CODE PIX & CONTAGEM
-          ══════════════════════════════════ */}
+          {/* ═══════════════════════════════
+              STEP 2 — QR CODE PIX
+          ═══════════════════════════════ */}
           {step === "pix" && pixData && (
             <div className="space-y-5 animate-in fade-in duration-300">
-              {/* Countdown Timer Badge */}
+              {/* Countdown */}
               {timeLeft !== null && (
                 <div
-                  className="flex items-center justify-between px-4 py-2.5 rounded-2xl border text-xs font-bold bg-card"
+                  className="flex items-center justify-between px-4 py-2.5 rounded-2xl text-xs font-bold"
                   style={{
-                    background: timeLeft < 180 ? "rgba(239, 68, 68, 0.1)" : "rgba(245, 158, 11, 0.1)",
-                    borderColor: timeLeft < 180 ? "rgba(239, 68, 68, 0.4)" : "rgba(245, 158, 11, 0.4)",
-                    color: timeLeft < 180 ? "#dc2626" : "#d97706",
+                    background: timeLeft < 180 ? "rgba(239,68,68,0.1)" : "rgba(245,158,11,0.1)",
+                    border: `1px solid ${timeLeft < 180 ? "rgba(239,68,68,0.4)" : "rgba(245,158,11,0.4)"}`,
+                    color: timeLeft < 180 ? "#ef4444" : "#f59e0b",
                   }}
                 >
                   <span className="flex items-center gap-1.5">
@@ -395,21 +404,21 @@ if (!isOpen) return null;
                 </div>
               )}
 
-              {/* QR Code Frame */}
-              <div className="flex flex-col items-center justify-center p-5 bg-white rounded-3xl border-2 border-dashed border-amber-500/40 shadow-inner relative">
+              {/* QR Code */}
+              <div className="flex flex-col items-center justify-center p-5 rounded-3xl relative" style={{ background: "#ffffff", border: "2px dashed rgba(245,158,11,0.4)" }}>
                 {coverImage && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-2xl overflow-hidden border-4 border-white shadow-lg">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-2xl overflow-hidden shadow-lg" style={{ border: "4px solid #fff" }}>
                     <img src={coverImage} alt={raffleTitle} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <div className="pt-8">
+                <div className={coverImage ? "pt-8" : ""}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`data:image/png;base64,${pixData.qrCodeBase64}`}
                     alt="QR Code PIX"
                     className="w-56 h-56 object-contain"
                   />
-                  <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                  <p className="text-[11px] text-center mt-2 font-medium" style={{ color: "#666" }}>
                     Abra o app do seu banco e escaneie o código
                   </p>
                 </div>
@@ -417,23 +426,21 @@ if (!isOpen) return null;
 
               {/* PIX Copia e Cola */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <label className="block text-xs font-bold uppercase tracking-wider" style={{ color: "#888" }}>
                   Ou copie a chave PIX Copia e Cola
                 </label>
-                <div className="flex rounded-2xl overflow-hidden border border-border bg-background shadow-xs">
+                <div className="flex rounded-2xl overflow-hidden" style={{ background: "#2a2a2a", border: "1px solid #444" }}>
                   <input
                     type="text"
                     readOnly
                     value={pixData.copyPaste}
-                    className="flex-1 px-3.5 py-3 bg-transparent text-xs font-mono outline-none min-w-0 truncate text-foreground"
+                    className="flex-1 px-3.5 py-3 bg-transparent text-xs font-mono outline-none min-w-0 truncate"
+                    style={{ color: "#ccc" }}
                   />
                   <button
                     onClick={copyToClipboard}
-                    className={`shrink-0 px-5 font-bold text-xs transition-all flex items-center gap-1.5 text-white ${
-                      copied
-                        ? "bg-emerald-600"
-                        : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
-                    }`}
+                    className="shrink-0 px-5 font-bold text-xs transition-all flex items-center gap-1.5 text-white"
+                    style={{ background: copied ? "#059669" : "linear-gradient(135deg, #f59e0b, #d97706)" }}
                   >
                     {copied ? (
                       <>
@@ -450,8 +457,8 @@ if (!isOpen) return null;
                 </div>
               </div>
 
-              {/* Indicador de Espera do Webhook */}
-              <div className="p-3.5 rounded-2xl bg-card border border-border flex items-center justify-center gap-2.5 text-xs text-muted-foreground">
+              {/* Indicador de Espera */}
+              <div className="p-3.5 rounded-2xl flex items-center justify-center gap-2.5 text-xs" style={{ background: "#242424", border: "1px solid #333", color: "#999" }}>
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
                 <span className="font-medium">Aguardando confirmação bancária em tempo real...</span>
               </div>
@@ -459,41 +466,46 @@ if (!isOpen) return null;
               {/* Botão de fallback */}
               <button
                 onClick={() => router.push(`/checkout/sucesso/${orderId}`)}
-                className="w-full py-3 rounded-2xl border border-border font-semibold text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="w-full py-3 rounded-2xl font-semibold text-xs transition-colors"
+                style={{ background: "#242424", border: "1px solid #333", color: "#999" }}
               >
                 Já realizei o pagamento →
               </button>
             </div>
           )}
 
-          {/* ══════════════════════════════════
-              STEP 3 — SUCESSO & COMPROVANTE 🎉
-          ══════════════════════════════════ */}
+          {/* ═══════════════════════════════
+              STEP 3 — SUCESSO 🎉
+          ═══════════════════════════════ */}
           {step === "confirmed" && (
             <div className="animate-in zoom-in-95 duration-400 text-center space-y-5 py-3">
-              <div className="w-20 h-20 mx-auto rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center text-4xl shadow-lg">
+              <div
+                className="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-4xl shadow-lg"
+                style={{ background: "rgba(16,185,129,0.1)", border: "2px solid rgba(16,185,129,0.3)" }}
+              >
                 🎉
               </div>
 
               <div>
-                <h3 className="text-2xl font-display font-black text-emerald-600 dark:text-emerald-400">
+                <h3 className="text-2xl font-display font-black" style={{ color: "#10b981" }}>
                   Pagamento Confirmado!
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs mt-1" style={{ color: "#888" }}>
                   Suas cotas foram vinculadas ao seu nome com sucesso. Boa sorte!
                 </p>
               </div>
 
               {/* Cotas Garantidas */}
-              <div className="p-4 rounded-2xl bg-card border border-border text-left space-y-2">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+              <div className="p-4 rounded-2xl text-left space-y-2" style={{ background: "#242424", border: "1px solid #333" }}>
+                <span className="text-xs font-bold uppercase tracking-wider block" style={{ color: "#888" }}>
                   Seus números oficiais:
                 </span>
                 <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                   {numbers.map((n) => (
                     <span
                       key={n}
-                      className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-mono font-black text-xs rounded-lg"
+                      className="px-2.5 py-1 font-mono font-black text-xs rounded-lg"
+                      style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#34d399" }}
                     >
                       {String(n).padStart(3, "0")}
                     </span>
@@ -508,7 +520,8 @@ if (!isOpen) return null;
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-4 rounded-2xl font-display font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all active:scale-98"
+                    className="w-full py-4 rounded-2xl font-display font-bold text-sm text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    style={{ background: "#059669", boxShadow: "0 6px 20px rgba(5,150,105,0.3)" }}
                   >
                     <span>💬</span>
                     <span>Enviar Comprovante ao Vendedor</span>
@@ -517,7 +530,8 @@ if (!isOpen) return null;
 
                 <button
                   onClick={() => router.push(`/checkout/sucesso/${orderId}`)}
-                  className="w-full py-3 rounded-2xl border border-border font-bold text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="w-full py-3 rounded-2xl font-bold text-xs transition-colors"
+                  style={{ background: "#242424", border: "1px solid #333", color: "#999" }}
                 >
                   Ver Recibo Completo
                 </button>

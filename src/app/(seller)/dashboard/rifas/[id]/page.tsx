@@ -66,6 +66,8 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
               maxNumbers: raffle.maxNumbers,
               whatsappNumber: raffle.whatsappNumber,
               status: raffle.status,
+              coverImage: raffle.coverImage,
+              images: raffle.images,
             }}
           />
           {raffle.status === "DRAFT" && (

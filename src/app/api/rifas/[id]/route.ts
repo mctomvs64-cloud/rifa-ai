@@ -12,7 +12,8 @@ const updateRaffleSchema = z.object({
   minNumbers: z.number().min(1).optional(),
   maxNumbers: z.number().min(1).optional(),
   whatsappNumber: z.string().optional().nullable(),
-  coverImage: z.string().url().optional().nullable(),
+  coverImage: z.string().optional().nullable(),
+  images: z.array(z.string()).optional().default([]),
   drawDate: z.string().datetime().optional().nullable(),
   status: z.enum(["DRAFT", "ACTIVE", "CLOSED", "DRAWN", "CANCELLED"]).optional(),
 });
@@ -59,6 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(data.maxNumbers !== undefined && { maxNumbers: data.maxNumbers }),
         ...(data.whatsappNumber !== undefined && { whatsappNumber: data.whatsappNumber?.replace(/\D/g, "") ?? null }),
         ...(data.coverImage !== undefined && { coverImage: data.coverImage }),
+        ...(data.images !== undefined && { images: data.images }),
         ...(data.drawDate !== undefined && { drawDate: data.drawDate ? new Date(data.drawDate) : null }),
         ...(data.status !== undefined && { status: data.status }),
       },
