@@ -16,9 +16,19 @@ export function createRateLimiter(config: RateLimitConfig) {
       req.headers.get("x-real-ip") ||
       "anonymous";
 
-    const key = `${keyPrefix}:${ip}`;
-    const now = Date.now();
+    // Lazy cleanup of expired entries
     const record = store.get(key);
+    const now = Date.now();
+    
+    // Clean up one random key periodically to prevent memory leaks
+    if (store.size > 1000) {
+      const keys = Array.from(store.keys());
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const r = store.get(randomKey);
+      if (r && now > r.resetTime) {
+        store.delete(randomKey);
+      }
+    }
 
     if (!record || now > record.resetTime) {
       store.set(key, { count: 1, resetTime: now + windowMs });
@@ -61,12 +71,3 @@ export const uploadRateLimiter = createRateLimiter({
   maxRequests: 10,
   keyPrefix: "upload",
 });
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, record] of store.entries()) {
-    if (now > record.resetTime) {
-      store.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
