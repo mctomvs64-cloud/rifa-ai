@@ -9,6 +9,7 @@ interface CheckoutModalProps {
   onClose: () => void;
   raffleId: string;
   raffleTitle: string;
+  raffleCoverImage?: string | null;
   numbers: number[];
   totalAmount: number;
   promotionId?: string | null;
@@ -28,11 +29,13 @@ export function CheckoutModal({
   onClose,
   raffleId,
   raffleTitle,
+  raffleCoverImage,
   numbers,
   totalAmount,
   promotionId = null,
   promotionName = null,
 }: CheckoutModalProps) {
+  const coverImage = raffleCoverImage || null;
   const router = useRouter();
   const [step, setStep] = useState<Step>("form");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -197,28 +200,45 @@ if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200 bg-black/80 backdrop-blur-sm"
     >
       <div
         className="bg-background text-foreground w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border relative overflow-hidden flex flex-col"
         style={{ maxHeight: "95dvh" }}
       >
+        {/* Cover Image Header */}
+        <div className="relative h-40 sm:h-48 bg-slate-900 overflow-hidden">
+          {coverImage ? (
+            <img
+              src={coverImage}
+              alt={raffleTitle}
+              className="w-full h-full object-cover opacity-90"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950/40 text-amber-400">
+              <span className="text-5xl mb-2">🎟️</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Rifa Oficial</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <h2 className="text-xl sm:text-2xl font-display font-black text-white drop-shadow-lg truncate">
+              {raffleTitle}
+            </h2>
+            <p className="text-xs text-amber-300 mt-1">
+              {step === "form" ? "Finalizar Reserva" : step === "pix" ? "Pagamento PIX" : "Cotas Confirmadas!"}
+            </p>
+          </div>
+        </div>
+
         {/* Top Accent Line */}
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600" />
 
-        {/* Modal Header */}
-        <div className="p-6 pb-4 border-b border-border flex items-center justify-between">
+        {/* Modal Header (compact) */}
+        <div className="p-4 pb-2 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-lg">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm">
               {step === "form" ? "📝" : step === "pix" ? "⚡" : "🎉"}
-            </div>
-            <div>
-              <h2 className="text-xl font-display font-black tracking-tight text-foreground">
-                {step === "form" ? "Finalizar Reserva" : step === "pix" ? "Pagamento PIX" : "Cotas Confirmadas!"}
-              </h2>
-              <p className="text-xs text-muted-foreground truncate max-w-[240px] sm:max-w-[320px]">
-                {raffleTitle}
-              </p>
             </div>
           </div>
 
@@ -226,7 +246,7 @@ if (!isOpen) return null;
             <button
               onClick={onClose}
               disabled={isProcessing}
-              className="w-8 h-8 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors text-sm font-bold disabled:opacity-40"
+              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors text-sm font-bold disabled:opacity-40 backdrop-blur-sm"
               aria-label="Fechar"
             >
               ✕
@@ -376,16 +396,23 @@ if (!isOpen) return null;
               )}
 
               {/* QR Code Frame */}
-              <div className="flex flex-col items-center justify-center p-5 bg-white rounded-3xl border-2 border-dashed border-amber-500/40 shadow-inner">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`data:image/png;base64,${pixData.qrCodeBase64}`}
-                  alt="QR Code PIX"
-                  className="w-56 h-56 object-contain"
-                />
-                <p className="text-[11px] text-slate-500 mt-2 font-medium">
-                  Abra o app do seu banco e escaneie o código
-                </p>
+              <div className="flex flex-col items-center justify-center p-5 bg-white rounded-3xl border-2 border-dashed border-amber-500/40 shadow-inner relative">
+                {coverImage && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-2xl overflow-hidden border-4 border-white shadow-lg">
+                    <img src={coverImage} alt={raffleTitle} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="pt-8">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                    alt="QR Code PIX"
+                    className="w-56 h-56 object-contain"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                    Abra o app do seu banco e escaneie o código
+                  </p>
+                </div>
               </div>
 
               {/* PIX Copia e Cola */}

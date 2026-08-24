@@ -352,6 +352,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
           onClose={() => setIsCheckoutOpen(false)}
           raffleId={raffle.id}
           raffleTitle={raffle.title}
+          raffleCoverImage={raffle.coverImage}
           numbers={selectedNumbers}
           totalAmount={totalAmount}
           promotionId={appliedPromotion?.id ?? null}
