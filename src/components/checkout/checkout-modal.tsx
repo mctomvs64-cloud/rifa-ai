@@ -39,6 +39,7 @@ export function CheckoutModal({
   const router = useRouter();
   const [step, setStep] = useState<Step>("form");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", phone: "", email: "" });
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -105,6 +106,7 @@ export function CheckoutModal({
       setPixData(null);
       setOrderId(null);
       setIsProcessing(false);
+      setErrorMsg(null);
       setCopied(false);
       setTimeLeft(null);
       setExpiresAt(null);
@@ -128,6 +130,7 @@ export function CheckoutModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+    setErrorMsg(null);
 
     try {
       const res = await fetch("/api/orders", {
@@ -143,23 +146,32 @@ export function CheckoutModal({
         }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Erro ao gerar pedido. Tente novamente.");
+      let data: Record<string, unknown> = {};
+      try {
+        data = await res.json();
+      } catch {
+        // Resposta vazia ou HTML (timeout do servidor)
+        setErrorMsg("O servidor demorou mais que o esperado. Aguarde 10 segundos e tente novamente.");
         setIsProcessing(false);
         return;
       }
 
-      setOrderId(data.orderId);
+      if (!res.ok) {
+        setErrorMsg((data.error as string) || "Erro ao gerar pedido. Tente novamente.");
+        setIsProcessing(false);
+        return;
+      }
 
-      if (data.expiresAt) setExpiresAt(new Date(data.expiresAt));
+      setOrderId(data.orderId as string);
 
-      if (data.pix?.qrCodeBase64) {
+      if (data.expiresAt) setExpiresAt(new Date(data.expiresAt as string));
+
+      if ((data.pix as Record<string, unknown>)?.qrCodeBase64) {
+        const pix = data.pix as Record<string, string>;
         setPixData({
-          qrCodeBase64: data.pix.qrCodeBase64,
-          copyPaste: data.pix.copyPaste,
-          paymentId: data.pix.paymentId,
+          qrCodeBase64: pix.qrCodeBase64,
+          copyPaste: pix.copyPaste,
+          paymentId: pix.paymentId,
         });
         setStep("pix");
         setPollingActive(true);
@@ -167,7 +179,7 @@ export function CheckoutModal({
         router.push(`/checkout/sucesso/${data.orderId}`);
       }
     } catch {
-      alert("Erro de conexão. Verifique sua internet e tente novamente.");
+      setErrorMsg("Erro de conexão. Verifique sua internet e tente novamente.");
       setIsProcessing(false);
     }
   };
@@ -370,6 +382,14 @@ export function CheckoutModal({
                     )}
                   </button>
                 </div>
+
+                {/* Erro inline — sem popup */}
+                {errorMsg && (
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl text-xs" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
+                    <span className="text-base shrink-0">⚠️</span>
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
               </form>
 
               <div className="text-center text-[11px] flex items-center justify-center gap-1.5 pt-1" style={{ color: "#555" }}>

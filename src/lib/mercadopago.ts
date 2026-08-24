@@ -5,7 +5,7 @@ import crypto from "crypto";
 // Inicializa o cliente do Mercado Pago com o access token real
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN!,
-  options: { timeout: 8000 },
+  options: { timeout: 15000 }, // 15s — funções Netlify têm até 26s configurados
 });
 
 const paymentClient = new Payment(client);
@@ -51,29 +51,46 @@ export async function createPixPayment(
     ? order.expiresAt.toISOString()
     : new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-  const response = await paymentClient.create({
-    body: {
-      transaction_amount: Number(order.totalAmount),
-      description: `${order.raffle.title} — ${numbers.length} número(s): ${numbers.slice(0, 5).join(", ")}${numbers.length > 5 ? "..." : ""}`,
-      payment_method_id: "pix",
-      external_reference: order.id,
-      payer: {
-        email: safeEmail,
-        first_name: buyerName.split(" ")[0] ?? buyerName,
-        last_name: buyerName.split(" ").slice(1).join(" ") || ".",
-        identification: {
-          type: "CPF",
-          number: "00000000000", // CPF não é obrigatório para PIX no MP
+  // Helper para criar pagamento com retry automático em erros transitórios
+  async function tryCreatePayment(attempt = 1): Promise<ReturnType<typeof paymentClient.create>> {
+    try {
+      return await paymentClient.create({
+        body: {
+          transaction_amount: Number(order.totalAmount),
+          description: `${order.raffle.title} — ${numbers.length} número(s): ${numbers.slice(0, 5).join(", ")}${numbers.length > 5 ? "..." : ""}`,
+          payment_method_id: "pix",
+          external_reference: order.id,
+          payer: {
+            email: safeEmail,
+            first_name: buyerName.split(" ")[0] ?? buyerName,
+            last_name: buyerName.split(" ").slice(1).join(" ") || ".",
+            identification: {
+              type: "CPF",
+              number: "00000000000",
+            },
+            phone: {
+              area_code: areaCode,
+              number: phoneNumber,
+            },
+          },
+          notification_url: `${appUrl}/api/webhooks/mercadopago`,
+          date_of_expiration: expirationDate,
         },
-        phone: {
-          area_code: areaCode,
-          number: phoneNumber,
-        },
-      },
-      notification_url: `${appUrl}/api/webhooks/mercadopago`,
-      date_of_expiration: expirationDate,
-    },
-  });
+      });
+    } catch (err) {
+      const isTimeout =
+        err instanceof Error &&
+        (err.message.includes("timeout") || err.message.includes("ETIMEDOUT") || err.message.includes("network"));
+      if (isTimeout && attempt < 3) {
+        console.warn(`[MP] Timeout na tentativa ${attempt}, tentando novamente...`);
+        await new Promise((r) => setTimeout(r, 1500 * attempt));
+        return tryCreatePayment(attempt + 1);
+      }
+      throw err;
+    }
+  }
+
+  const response = await tryCreatePayment();
 
   const txData = response.point_of_interaction?.transaction_data;
 
