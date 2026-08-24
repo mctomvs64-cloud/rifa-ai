@@ -4,6 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 import { uploadRateLimiter } from "@/lib/security/rate-limit";
 import { applySecurityHeaders } from "@/lib/security/headers";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 // Cria cliente Supabase com a service role (acesso admin ao Storage)
 function getSupabaseAdmin() {
   const url = process.env.SUPABASE_URL;
@@ -16,6 +22,10 @@ function getSupabaseAdmin() {
 
 const BUCKET = "rifas";
 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function POST(req: Request) {
   const rateLimitRes = await uploadRateLimiter(req as any);
   if (rateLimitRes) return applySecurityHeaders(rateLimitRes);
@@ -23,7 +33,9 @@ export async function POST(req: Request) {
   const session = await auth();
 
   if (!session?.user) {
-    return applySecurityHeaders(NextResponse.json({ error: "Não autorizado" }, { status: 401 }));
+    const response = NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+    return applySecurityHeaders(response);
   }
 
   try {
@@ -32,25 +44,31 @@ export async function POST(req: Request) {
     const type = (formData.get("type") as string) || "gallery";
 
     if (!file) {
-      return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
+      const response = NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
+      Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+      return response;
     }
 
     // Validar tipo de arquivo
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "Tipo não suportado. Use JPG, PNG, WebP ou GIF." },
         { status: 400 }
       );
+      Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+      return response;
     }
 
     // Aceitar até 30MB
     const maxSize = 30 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "Arquivo muito grande. Máximo 30MB." },
         { status: 400 }
       );
+      Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+      return response;
     }
 
     // Gerar nome único para o arquivo
@@ -74,9 +92,9 @@ export async function POST(req: Request) {
 
     if (uploadError) {
       console.error("[Upload] Supabase error:", uploadError);
-      return applySecurityHeaders(
-        NextResponse.json({ error: uploadError.message }, { status: 500 })
-      );
+      const response = NextResponse.json({ error: uploadError.message }, { status: 500 });
+      Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+      return applySecurityHeaders(response);
     }
 
     // Gerar URL pública
@@ -84,14 +102,16 @@ export async function POST(req: Request) {
       .from(BUCKET)
       .getPublicUrl(filePath);
 
-    return applySecurityHeaders(NextResponse.json({ url: publicUrlData.publicUrl }));
+    const response = NextResponse.json({ url: publicUrlData.publicUrl });
+    Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+    return applySecurityHeaders(response);
   } catch (error) {
     console.error("[Upload] Erro:", error);
-    return applySecurityHeaders(
-      NextResponse.json(
-        { error: error instanceof Error ? error.message : "Erro ao fazer upload" },
-        { status: 500 }
-      )
+    const response = NextResponse.json(
+      { error: error instanceof Error ? error.message : "Erro ao fazer upload" },
+      { status: 500 }
     );
+    Object.entries(corsHeaders).forEach(([k, v]) => response.headers.set(k, v));
+    return applySecurityHeaders(response);
   }
 }
