@@ -56,6 +56,6 @@ export async function POST(req: Request) {
     return applySecurityHeaders(NextResponse.json({ url: blob.url }));
   } catch (error) {
     console.error("[Upload] Erro:", error);
-    return applySecurityHeaders(NextResponse.json({ error: "Erro ao fazer upload" }, { status: 500 }));
+    return applySecurityHeaders(NextResponse.json({ error: error instanceof Error ? error.message : "Erro ao fazer upload" }, { status: 500 }));
   }
 }

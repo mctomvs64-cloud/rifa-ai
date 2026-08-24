@@ -98,13 +98,13 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
         {/* Card Principal da Rifa */}
         <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           {/* Imagem / Cover */}
-          <div className="relative h-64 bg-slate-900 overflow-hidden group">
+          <div className="relative w-full aspect-square bg-slate-900 overflow-hidden group flex items-center justify-center">
             {raffle.coverImage ? (
               <Image
                 src={raffle.coverImage}
                 alt={raffle.title}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                className="object-contain group-hover:scale-105 transition-transform duration-500"
                 priority
               />
             ) : (

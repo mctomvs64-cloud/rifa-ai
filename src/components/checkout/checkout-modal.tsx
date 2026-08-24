@@ -209,15 +209,15 @@ export function CheckoutModal({
         style={{ maxHeight: "95dvh", background: "#1a1a1a" }}
       >
         {/* ─── Cover Image Header ─── */}
-        <div className="relative h-44 sm:h-52 overflow-hidden shrink-0">
+        <div className="relative w-full aspect-square max-h-[40vh] sm:max-h-[50vh] bg-black overflow-hidden shrink-0 flex items-center justify-center">
           {coverImage ? (
             <>
               <img
                 src={coverImage}
                 alt={raffleTitle}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-black/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/20 to-transparent pointer-events-none" />
             </>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-amber-950/30">
