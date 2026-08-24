@@ -52,37 +52,53 @@ export async function createPixPayment(
     : new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
   // Helper para criar pagamento com retry automático em erros transitórios
-  async function tryCreatePayment(attempt = 1): Promise<ReturnType<typeof paymentClient.create>> {
+  async function tryCreatePayment(attempt = 1): Promise<any> {
     try {
-      return await paymentClient.create({
-        body: {
-          transaction_amount: Number(order.totalAmount),
-          description: `${order.raffle.title} — ${numbers.length} número(s): ${numbers.slice(0, 5).join(", ")}${numbers.length > 5 ? "..." : ""}`,
-          payment_method_id: "pix",
-          external_reference: order.id,
-          payer: {
-            email: safeEmail,
-            first_name: buyerName.split(" ")[0] ?? buyerName,
-            last_name: buyerName.split(" ").slice(1).join(" ") || ".",
-            identification: {
-              type: "CPF",
-              number: "00000000000",
-            },
-            phone: {
-              area_code: areaCode,
-              number: phoneNumber,
-            },
+      const body = {
+        transaction_amount: Number(order.totalAmount),
+        description: `${order.raffle.title} — ${numbers.length} número(s): ${numbers.slice(0, 5).join(", ")}${numbers.length > 5 ? "..." : ""}`,
+        payment_method_id: "pix",
+        external_reference: order.id,
+        payer: {
+          email: safeEmail,
+          first_name: buyerName.split(" ")[0] ?? buyerName,
+          last_name: buyerName.split(" ").slice(1).join(" ") || ".",
+          identification: {
+            type: "CPF",
+            number: "00000000000",
           },
-          notification_url: `${appUrl}/api/webhooks/mercadopago`,
-          date_of_expiration: expirationDate,
+          phone: {
+            area_code: areaCode,
+            number: phoneNumber,
+          },
         },
+        notification_url: `${appUrl}/api/webhooks/mercadopago`,
+        date_of_expiration: expirationDate,
+      };
+
+      const res = await fetch("https://api.mercadopago.com/v1/payments", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+          "X-Idempotency-Key": `${order.id}-${attempt}`
+        },
+        body: JSON.stringify(body),
+        // Timeout nativo (opcional, o padrão já basta, mas abort controller seria longo aqui, Netlify mata em 26s de qualquer forma)
       });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Erro do Mercado Pago: ${res.status} - ${errorText}`);
+      }
+
+      return res.json();
     } catch (err) {
       const isTimeout =
         err instanceof Error &&
-        (err.message.includes("timeout") || err.message.includes("ETIMEDOUT") || err.message.includes("network"));
+        (err.message.includes("timeout") || err.message.includes("ETIMEDOUT") || err.message.includes("network") || err.message.includes("fetch failed"));
       if (isTimeout && attempt < 3) {
-        console.warn(`[MP] Timeout na tentativa ${attempt}, tentando novamente...`);
+        console.warn(`[MP] Timeout/Net erro na tentativa ${attempt}, tentando novamente...`);
         await new Promise((r) => setTimeout(r, 1500 * attempt));
         return tryCreatePayment(attempt + 1);
       }
