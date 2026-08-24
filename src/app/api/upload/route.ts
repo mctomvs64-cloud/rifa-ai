@@ -12,8 +12,8 @@ const corsHeaders = {
 
 // Cria cliente Supabase com a service role (acesso admin ao Storage)
 function getSupabaseAdmin() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.SUPABASE_URL || "https://grrqpxgftshviknbfwtu.supabase.co";
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdycnFweGdmdHNodmlrbmJmd3R1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzMyODkzMCwiZXhwIjoyMTAyOTA0OTMwfQ.-x3sdHqLZedDrcFMDPvxQWyVoVc95UaPGR96SVfaD7k";
   if (!url || !key) {
     throw new Error("SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY não configurados");
   }

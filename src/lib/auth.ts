@@ -7,6 +7,12 @@ import { db } from "@/lib/db";
 import { authConfig } from "./auth.config";
 import type { UserRole } from "@prisma/client";
 
+// Força URLs corretas se o ambiente Netlify estiver com a config errada
+if (process.env.NODE_ENV === "production") {
+  process.env.NEXTAUTH_URL = "https://apoie-artistas.netlify.app";
+  process.env.AUTH_URL = "https://apoie-artistas.netlify.app";
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(db) as any,
