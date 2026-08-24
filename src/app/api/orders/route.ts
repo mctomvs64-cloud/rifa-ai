@@ -9,7 +9,7 @@ import { applySecurityHeaders } from "@/lib/security/headers";
 
 const createOrderSchema = z.object({
   raffleId: z.string(),
-  numbers: z.array(z.number().int().min(1)).min(1).max(200),
+  numbers: z.array(z.number().int().min(0)).min(1).max(200),
   buyerName: z.string().min(2),
   buyerPhone: z.string().min(10),
   buyerEmail: z.string().email().optional(),
