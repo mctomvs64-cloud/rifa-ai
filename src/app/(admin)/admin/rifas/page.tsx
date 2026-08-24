@@ -89,6 +89,8 @@ export default async function MonitoramentoRifasPage() {
                         maxNumbers: raffle.maxNumbers,
                         whatsappNumber: raffle.whatsappNumber,
                         status: raffle.status,
+                        coverImage: raffle.coverImage,
+                        images: raffle.images ?? [],
                       }}
                     />
                     <DeleteRaffleButton

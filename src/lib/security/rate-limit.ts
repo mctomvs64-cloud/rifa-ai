@@ -16,6 +16,8 @@ export function createRateLimiter(config: RateLimitConfig) {
       req.headers.get("x-real-ip") ||
       "anonymous";
 
+    const key = `${keyPrefix}:${ip}`;
+
     // Lazy cleanup of expired entries
     const record = store.get(key);
     const now = Date.now();
