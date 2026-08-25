@@ -1,0 +1,148 @@
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+
+export async function POST(req: Request) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const orderId = searchParams.get("orderId");
+    const raffleId = searchParams.get("raffleId");
+
+    // Determina se é preference da raffa (sem pedido) ou de um pedido específico
+    const isRaffleId = !orderId || (orderId && orderId.startsWith("raf_"));
+
+    // Se vier um orderId que não é "raf_", procura o pedido específico
+    let order;
+    if (orderId && !isRaffleId) {
+      order = await db.order.findUnique({
+        where: { id: orderId },
+        select: {
+          id: true,
+          raffleId: true,
+          totalAmount: true,
+          buyerName: true,
+          buyerPhone: true,
+          buyerEmail: true,
+          quantity: true,
+          status: true,
+        },
+      });
+
+      if (!order) {
+        return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 });
+      }
+
+      if (order.status !== "PENDING") {
+        return NextResponse.json(
+          { error: "Somente pedidos pendentes podem ser convertidos para Checkout Pro" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Busca a raffa - usa raffleId se fornecido, senão usa orderId (caso seja raffleId)
+    const targetRaffleId = raffleId || (isRaffleId ? orderId : order?.raffleId);
+    
+    if (!targetRaffleId || targetRaffleId === "raf_raffle_raffle") {
+      return NextResponse.json({ error: "ID da raffa inválido" }, { status: 400 });
+    }
+
+    const raffle = await db.raffle.findUnique({
+      where: { id: targetRaffleId as string },
+      select: { id: true, title: true, prize: true, pricePerNumber: true, totalNumbers: true },
+    });
+
+    if (!raffle) {
+      return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
+    }
+
+    // Dados do comprador - usamos dados da raffa quando é preference da raffa
+    const cleanPhone = isRaffleId ? "" : (order?.buyerPhone?.replace(/\D/g, "") || "");
+    const areaCode = isRaffleId ? "11" : (cleanPhone.length >= 11 ? cleanPhone.slice(0, 2) : "11");
+    const phoneNumber = isRaffleId ? "" : (cleanPhone.length >= 11 ? cleanPhone.slice(2) : cleanPhone);
+
+    // Monta a preference no Mercado Pago
+    const preferenceBody = {
+      // Dados do comprador (usando dados da raffa quando for preference da raffa)
+      buyer: {
+        name: isRaffleId ? "Comprador da Rifa" : (order?.buyerName || "Comprador"),
+        phone: isRaffleId ? undefined : {
+          area_code: areaCode,
+          number: phoneNumber,
+        },
+        email: isRaffleId ? "comprador@rifaai.com.br" : (order?.buyerEmail || "comprador@rifaai.com.br"),
+      },
+
+      // Identificação do pedido
+      external_reference: isRaffleId ? raffle.id : order?.id,
+
+      // Itens do carrinho
+      items: [
+        {
+          title: `Rifa: ${raffle.title}`,
+          quantity: isRaffleId ? raffle.totalNumbers : order?.quantity || 1,
+          unit_price: isRaffleId 
+            ? Number(Number(raffle.pricePerNumber))
+            : Number(order?.totalAmount) / (order?.quantity || 1),
+          description: `(${isRaffleId ? raffle.totalNumbers : order?.quantity || 1} número(s) da ${raffle.title}) - Prêmio: ${raffle.prize}`,
+        },
+      ],
+
+      // Configurações de pagamento
+      payment_methods: {
+        installments: 12,
+      },
+
+      // URLs de retorno
+      back_urls: [
+        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard/rifas/${raffle.id}?status=success`,
+        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard/rifas/${raffle.id}?status=pending`,
+        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard/rifas/${raffle.id}?status=failure`,
+      ],
+
+      // Expiração da preference (24 horas)
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+
+      // Dados adicionais
+      notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
+    };
+
+    // Chama a API do Mercado Pago
+    const mpResponse = await fetch("https://api.mercadopago.com/v1/preferences", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(preferenceBody),
+    });
+
+    if (!mpResponse.ok) {
+      const errorText = await mpResponse.text();
+      console.error("[Checkout Pro] MP API error:", mpResponse.status, errorText);
+      return NextResponse.json(
+        { error: "Erro ao comunicar com Mercado Pago" },
+        { status: 500 }
+      );
+    }
+
+    const preference = await mpResponse.json();
+
+    return NextResponse.json({
+      sdk_url: preference.sdk_url,
+      preference_id: preference.id,
+    });
+  } catch (error) {
+    console.error("[Checkout Pro] Erro:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Erro ao criar preference" },
+      { status: 500 }
+    );
+  }
+}
