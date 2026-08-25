@@ -120,8 +120,8 @@ export async function POST(req: Request) {
       notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
     };
 
-    // Chama a API do Mercado Pago
-    const mpResponse = await fetch("https://api.mercadopago.com/v1/preferences", {
+    // Chama a API do Mercado Pago (endpoint correto para preferências)
+    const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
