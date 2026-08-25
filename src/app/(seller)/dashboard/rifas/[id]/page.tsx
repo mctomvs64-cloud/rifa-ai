@@ -10,6 +10,7 @@ import { EditRaffleModal } from "@/components/raffle/edit-raffle-modal";
 import { DeleteRaffleButton } from "@/components/raffle/delete-raffle-button";
 import { CloseRaffleButton } from "@/components/raffle/close-raffle-button";
 import { BuyersExportButton, type BuyerRecord } from "@/components/raffle/buyers-export-button";
+import { CheckoutProButton } from "@/components/checkout/checkout-pro-button";
 
 const STATUS_ORDER: Record<string, number> = { PAID: 0, PENDING: 1, EXPIRED: 2 };
 
@@ -71,8 +72,10 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
     quantity: o.quantity,
     totalAmount: Number(o.totalAmount),
     createdAt: o.createdAt.toISOString(),
-    numbers: o.numbers.map((n) => n.number),
+    numbers: o.numbers.length > 0 ? o.numbers.map((n) => n.number) : (o.reservedNumbers ?? []),
   }));
+
+  const leadOrders = buyerRecords.filter((r) => r.status === "PENDING");
 
   const paidRevenue = buyerRecords.filter((r) => r.status === "PAID").reduce((acc, r) => acc + r.totalAmount, 0);
   const openValue = buyerRecords.filter((r) => r.status !== "PAID").reduce((acc, r) => acc + r.totalAmount, 0);
@@ -300,6 +303,15 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
           </div>
         )}
       </div>
+
+{/* Botão de Checkout Pro - sempre disponível ao pagar a raffa */}
+      <CheckoutProButton
+        raffleId={raffle.id}
+        orderId={`raf_${raffle.id}`}
+        raffleTitle={raffle.title}
+        totalAmount={Number(raffle.totalNumbers * raffle.pricePerNumber)}
+        quantity={raffle.totalNumbers}
+      />
 
       {/* Gerador de Números (Apenas se for DRAFT) */}
       {raffle.status === "DRAFT" && raffle._count.numbers === 0 && (

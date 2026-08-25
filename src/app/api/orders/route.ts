@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
           sellerAmount,
           status: "PENDING",
           expiresAt,
+          reservedNumbers: numbers, // snapshot dos números para preservação do lead após liberação
           ...(promotion ? { promotionId: promotion.id } : {}),
         },
       });

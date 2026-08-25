@@ -216,6 +216,9 @@ model Order {
   platformFee    Decimal @db.Decimal(10, 2) // Taxa da plataforma
   sellerAmount   Decimal @db.Decimal(10, 2) // Valor para o vendedor
 
+  // Snapshot imutável dos números reservados (preserva o lead mesmo após liberação das cotas)
+  reservedNumbers Int[] @default([])
+
   // Mercado Pago
   mpPaymentId    String? @unique // ID do pagamento no MP
   mpPreferenceId String? // ID da preferência de checkout
