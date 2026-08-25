@@ -4,18 +4,21 @@ import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const orderId = searchParams.get("orderId");
     const raffleId = searchParams.get("raffleId");
 
     // Determina se é preference da raffa (sem pedido) ou de um pedido específico
     const isRaffleId = !orderId || (orderId && orderId.startsWith("raf_"));
+
+    // Preference da rifa inteira (painel) exige sessão de vendedor/admin.
+    // Pedido específico é fluxo público do comprador (sem login).
+    if (isRaffleId) {
+      const session = await auth();
+      if (!session?.user) {
+        return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      }
+    }
 
     // Se vier um orderId que não é "raf_", procura o pedido específico
     let order;
@@ -99,11 +102,17 @@ export async function POST(req: Request) {
         installments: 12,
       },
 
-      // URLs de retorno
+      // URLs de retorno — comprador volta para o recibo do próprio pedido
       back_urls: [
-        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard/rifas/${raffle.id}?status=success`,
-        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard/rifas/${raffle.id}?status=pending`,
-        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/dashboard/rifas/${raffle.id}?status=failure`,
+        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${
+          isRaffleId ? `dashboard/rifas/${raffle.id}?status=success` : `checkout/sucesso/${order?.id}`
+        }`,
+        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${
+          isRaffleId ? `dashboard/rifas/${raffle.id}?status=pending` : `checkout/sucesso/${order?.id}`
+        }`,
+        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${
+          isRaffleId ? `dashboard/rifas/${raffle.id}?status=failure` : `checkout/sucesso/${order?.id}`
+        }`,
       ],
 
       // Expiração da preference (24 horas)

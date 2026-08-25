@@ -18,6 +18,8 @@ interface CheckoutModalProps {
 
 type Step = "form" | "pix" | "confirmed";
 
+type PayMethod = "pix" | "pro";
+
 interface PixData {
   qrCodeBase64: string;
   copyPaste: string;
@@ -39,6 +41,7 @@ export function CheckoutModal({
   const router = useRouter();
   const [step, setStep] = useState<Step>("form");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [payMethod, setPayMethod] = useState<PayMethod>("pix");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", phone: "", email: "" });
   const [pixData, setPixData] = useState<PixData | null>(null);
@@ -106,6 +109,7 @@ export function CheckoutModal({
       setPixData(null);
       setOrderId(null);
       setIsProcessing(false);
+      setPayMethod("pix");
       setErrorMsg(null);
       setCopied(false);
       setTimeLeft(null);
@@ -127,8 +131,8 @@ export function CheckoutModal({
     setFormData({ ...formData, phone: formatted });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const processOrder = async (method: PayMethod) => {
+    setPayMethod(method);
     setIsProcessing(true);
     setErrorMsg(null);
 
@@ -166,6 +170,29 @@ export function CheckoutModal({
 
       if (data.expiresAt) setExpiresAt(new Date(data.expiresAt as string));
 
+      // ── Fluxo Checkout Pro (cartão e outros métodos) ──
+      if (method === "pro") {
+        try {
+          const proRes = await fetch(
+            `/api/orders/checkout-pro?orderId=${encodeURIComponent(data.orderId as string)}&raffleId=${encodeURIComponent(raffleId)}`,
+            { method: "POST" }
+          );
+          const proData = await proRes.json().catch(() => ({}) as Record<string, unknown>);
+
+          if (proRes.ok && proData.sdk_url) {
+            window.location.href = proData.sdk_url as string;
+            return; // redirecionando — mantém isProcessing
+          }
+          setErrorMsg(
+            (proData.error as string) || "Não foi possível abrir o pagamento com cartão. Tente pelo PIX."
+          );
+        } catch {
+          setErrorMsg("Erro ao conectar ao Mercado Pago. Tente pelo PIX.");
+        }
+        setIsProcessing(false);
+        return;
+      }
+
       if ((data.pix as Record<string, unknown>)?.qrCodeBase64) {
         const pix = data.pix as Record<string, string>;
         setPixData({
@@ -182,6 +209,16 @@ export function CheckoutModal({
       setErrorMsg("Erro de conexão. Verifique sua internet e tente novamente.");
       setIsProcessing(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await processOrder("pix");
+  };
+
+  const handleCheckoutPro = async () => {
+    if (isProcessing) return;
+    await processOrder("pro");
   };
 
   const copyToClipboard = async () => {
@@ -362,14 +399,14 @@ export function CheckoutModal({
                   />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 space-y-2.5">
                   <button
                     type="submit"
                     disabled={isProcessing}
                     className="w-full py-4 rounded-2xl font-display font-black text-base text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
                     style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", boxShadow: "0 8px 24px rgba(245,158,11,0.3)" }}
                   >
-                    {isProcessing ? (
+                    {isProcessing && payMethod === "pix" ? (
                       <>
                         <span className="animate-spin text-lg">⏳</span>
                         <span>Gerando QR Code PIX...</span>
@@ -380,6 +417,21 @@ export function CheckoutModal({
                         <span>⚡</span>
                       </>
                     )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCheckoutPro}
+                    disabled={isProcessing}
+                    className="w-full py-4 rounded-2xl font-display font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                    style={{ background: "#1f2d3a", border: "1.5px solid #009ee3", color: "#009ee3" }}
+                  >
+                    <span>💳</span>
+                    <span>
+                      {isProcessing && payMethod === "pro"
+                        ? "Abrindo Mercado Pago..."
+                        : "Pagar com Cartão ou outros métodos"}
+                    </span>
                   </button>
                 </div>
 
