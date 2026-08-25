@@ -67,35 +67,37 @@ export async function POST(req: Request) {
 
     // Dados do comprador - usamos dados da raffa quando é preference da raffa
     const cleanPhone = isRaffleId ? "" : (order?.buyerPhone?.replace(/\D/g, "") || "");
-    const areaCode = isRaffleId ? "11" : (cleanPhone.length >= 11 ? cleanPhone.slice(0, 2) : "11");
-    const phoneNumber = isRaffleId ? "" : (cleanPhone.length >= 11 ? cleanPhone.slice(2) : cleanPhone);
+    const areaCode = cleanPhone.length >= 11 ? cleanPhone.slice(0, 2) : "11";
+    const phoneNumber = cleanPhone.length >= 11 ? cleanPhone.slice(2) : cleanPhone;
 
-    // Monta a preference no Mercado Pago
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const backBaseUrl = isRaffleId
+      ? `${baseUrl}/dashboard/rifas/${raffle.id}`
+      : `${baseUrl}/checkout/sucesso/${order?.id}`;
+
+    // Monta a preference no formato exigido pela API /v1/preferences do Mercado Pago
     const preferenceBody = {
-      // Dados do comprador (usando dados da raffa quando for preference da raffa)
-      buyer: {
-        name: isRaffleId ? "Comprador da Rifa" : (order?.buyerName || "Comprador"),
-        phone: isRaffleId ? undefined : {
-          area_code: areaCode,
-          number: phoneNumber,
-        },
-        email: isRaffleId ? "comprador@rifaai.com.br" : (order?.buyerEmail || "comprador@rifaai.com.br"),
-      },
-
-      // Identificação do pedido
+      // Identificação do pedido (usada pelo webhook para marcar como pago)
       external_reference: isRaffleId ? raffle.id : order?.id,
 
-      // Itens do carrinho
+      // Itens do carrinho (pedido específico vai como 1 item com o valor total)
       items: [
         {
           title: `Rifa: ${raffle.title}`,
-          quantity: isRaffleId ? raffle.totalNumbers : order?.quantity || 1,
-          unit_price: isRaffleId 
-            ? Number(Number(raffle.pricePerNumber))
-            : Number(order?.totalAmount) / (order?.quantity || 1),
-          description: `(${isRaffleId ? raffle.totalNumbers : order?.quantity || 1} número(s) da ${raffle.title}) - Prêmio: ${raffle.prize}`,
+          quantity: 1,
+          unit_price: isRaffleId
+            ? Number(raffle.pricePerNumber) * raffle.totalNumbers
+            : Number(order?.totalAmount),
+          description: `${isRaffleId ? raffle.totalNumbers : order?.quantity || 1} número(s) da rifa - Prêmio: ${raffle.prize}`,
         },
       ],
+
+      // Dados do comprador (campo correto é "payer")
+      payer: {
+        name: isRaffleId ? "Comprador da Rifa" : (order?.buyerName || "Comprador"),
+        email: isRaffleId ? "comprador@rifaai.com.br" : (order?.buyerEmail || "comprador@rifaai.com.br"),
+        ...(isRaffleId ? {} : { phone: { area_code: areaCode, number: phoneNumber } }),
+      },
 
       // Configurações de pagamento
       payment_methods: {
@@ -103,22 +105,18 @@ export async function POST(req: Request) {
       },
 
       // URLs de retorno — comprador volta para o recibo do próprio pedido
-      back_urls: [
-        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${
-          isRaffleId ? `dashboard/rifas/${raffle.id}?status=success` : `checkout/sucesso/${order?.id}`
-        }`,
-        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${
-          isRaffleId ? `dashboard/rifas/${raffle.id}?status=pending` : `checkout/sucesso/${order?.id}`
-        }`,
-        `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${
-          isRaffleId ? `dashboard/rifas/${raffle.id}?status=failure` : `checkout/sucesso/${order?.id}`
-        }`,
-      ],
+      back_urls: {
+        success: `${backBaseUrl}?status=success`,
+        pending: `${backBaseUrl}?status=pending`,
+        failure: `${backBaseUrl}?status=failure`,
+      },
+      auto_return: "approved",
 
       // Expiração da preference (24 horas)
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      expires: true,
+      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 
-      // Dados adicionais
+      // Webhook para confirmação automática
       notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
     };
 
@@ -136,8 +134,8 @@ export async function POST(req: Request) {
       const errorText = await mpResponse.text();
       console.error("[Checkout Pro] MP API error:", mpResponse.status, errorText);
       return NextResponse.json(
-        { error: "Erro ao comunicar com Mercado Pago" },
-        { status: 500 }
+        { error: `Mercado Pago recusou a preferência (${mpResponse.status}): ${errorText.slice(0, 200)}` },
+        { status: 502 }
       );
     }
 

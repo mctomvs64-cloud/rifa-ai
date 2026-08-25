@@ -131,10 +131,38 @@ export function CheckoutModal({
     setFormData({ ...formData, phone: formatted });
   };
 
+  const openCheckoutPro = async (existingOrderId: string): Promise<boolean> => {
+    try {
+      const proRes = await fetch(
+        `/api/orders/checkout-pro?orderId=${encodeURIComponent(existingOrderId)}&raffleId=${encodeURIComponent(raffleId)}`,
+        { method: "POST" }
+      );
+      const proData = await proRes.json().catch(() => ({}) as Record<string, unknown>);
+
+      if (proRes.ok && proData.sdk_url) {
+        window.location.href = proData.sdk_url as string;
+        return true; // redirecionando — mantém isProcessing
+      }
+      setErrorMsg(
+        (proData.error as string) || "Não foi possível abrir o pagamento com cartão. Tente pelo PIX."
+      );
+    } catch {
+      setErrorMsg("Erro ao conectar ao Mercado Pago. Tente pelo PIX.");
+    }
+    return false;
+  };
+
   const processOrder = async (method: PayMethod) => {
     setPayMethod(method);
     setIsProcessing(true);
     setErrorMsg(null);
+
+    // Se já existe um pedido pendente desta sessão, reutiliza em vez de criar outro
+    if (method === "pro" && orderId) {
+      const ok = await openCheckoutPro(orderId);
+      if (!ok) setIsProcessing(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/orders", {
@@ -172,24 +200,8 @@ export function CheckoutModal({
 
       // ── Fluxo Checkout Pro (cartão e outros métodos) ──
       if (method === "pro") {
-        try {
-          const proRes = await fetch(
-            `/api/orders/checkout-pro?orderId=${encodeURIComponent(data.orderId as string)}&raffleId=${encodeURIComponent(raffleId)}`,
-            { method: "POST" }
-          );
-          const proData = await proRes.json().catch(() => ({}) as Record<string, unknown>);
-
-          if (proRes.ok && proData.sdk_url) {
-            window.location.href = proData.sdk_url as string;
-            return; // redirecionando — mantém isProcessing
-          }
-          setErrorMsg(
-            (proData.error as string) || "Não foi possível abrir o pagamento com cartão. Tente pelo PIX."
-          );
-        } catch {
-          setErrorMsg("Erro ao conectar ao Mercado Pago. Tente pelo PIX.");
-        }
-        setIsProcessing(false);
+        const ok = await openCheckoutPro(data.orderId as string);
+        if (!ok) setIsProcessing(false);
         return;
       }
 
