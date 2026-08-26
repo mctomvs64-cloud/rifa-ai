@@ -141,8 +141,19 @@ export async function POST(req: Request) {
 
     const preference = await mpResponse.json();
 
+    // A API do MP retorna a URL de pagamento em "init_point"
+    const checkoutUrl = preference.init_point ?? preference.sandbox_init_point;
+
+    if (!checkoutUrl) {
+      console.error("[Checkout Pro] Preference sem init_point:", JSON.stringify(preference).slice(0, 300));
+      return NextResponse.json(
+        { error: "Mercado Pago não retornou a URL de pagamento" },
+        { status: 502 }
+      );
+    }
+
     return NextResponse.json({
-      sdk_url: preference.sdk_url,
+      sdk_url: checkoutUrl,
       preference_id: preference.id,
     });
   } catch (error) {
