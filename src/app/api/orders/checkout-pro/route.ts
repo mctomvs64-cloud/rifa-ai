@@ -99,9 +99,11 @@ export async function POST(req: Request) {
         ...(isRaffleId ? {} : { phone: { area_code: areaCode, number: phoneNumber } }),
       },
 
-      // Configurações de pagamento
+      // Configurações de pagamento — sem boleto (aceita PIX, cartão, saldo MP etc.)
       payment_methods: {
         installments: 12,
+        excluded_payment_types: [{ id: "ticket" }],
+        excluded_payment_methods: [{ id: "bolbradesco" }],
       },
 
       // URLs de retorno — comprador volta para o recibo do próprio pedido
