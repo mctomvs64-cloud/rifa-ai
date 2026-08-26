@@ -188,7 +188,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
             <div className="pt-3 border-t border-border space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">✓</span>
-                <span>Pagamento instantâneo e seguro via <strong>PIX</strong></span>
+                <span>Pagamento instantâneo e seguro — <strong>PIX ou Cartão</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">✓</span>
@@ -268,12 +268,12 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
                   onClick={handleCheckout}
                   className="w-full py-4 rounded-2xl font-display font-black text-base tracking-wide bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25 transition-all transform active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Pagar com PIX</span>
+                  <span>Pagar Agora</span>
                   <span>⚡</span>
                 </button>
 
                 <p className="text-[11px] text-center text-muted-foreground">
-                  🔒 Seus números serão reservados por 15min ao gerar o PIX.
+                  🔒 Seus números serão reservados por 15min ao iniciar o pagamento.
                 </p>
               </div>
             </div>
@@ -338,7 +338,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
               onClick={handleCheckout}
               className="px-6 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md flex items-center gap-2"
             >
-              <span>Pagar PIX</span>
+              <span>Pagar Agora</span>
               <span>⚡</span>
             </button>
           </div>
