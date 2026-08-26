@@ -425,7 +425,7 @@ export function CheckoutModal({
                       </>
                     ) : (
                       <>
-                        <span>Gerar PIX — {formatCurrency(totalAmount)}</span>
+                        <span>Pagar Agora — {formatCurrency(totalAmount)}</span>
                         <span>⚡</span>
                       </>
                     )}
@@ -442,7 +442,7 @@ export function CheckoutModal({
                     <span>
                       {isProcessing && payMethod === "pro"
                         ? "Abrindo Mercado Pago..."
-                        : "Pagar com Cartão ou outros métodos"}
+                        : "Escolher outro método de pagamento"}
                     </span>
                   </button>
                 </div>
