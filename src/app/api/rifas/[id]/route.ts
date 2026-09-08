@@ -51,7 +51,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const data = parsed.data;
 
-    // If totalNumbers changed, regenerate numbers for DRAFT raffles
+    // Se o total de cotas mudou, apenas deletamos os números antigos para que o 
+    // botão "Gerar Bilhetes" apareça novamente e faça a geração com a nova quantidade.
+    // Gerar milhares de cotas no meio de um PATCH causa timeout na API.
     if (data.totalNumbers !== undefined && data.totalNumbers !== raffle.totalNumbers) {
       if (raffle.status !== "DRAFT") {
         return NextResponse.json(
@@ -59,20 +61,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           { status: 400 }
         );
       }
-      // Delete existing numbers and regenerate
+      
+      // Apaga os números atuais (se houver) para que o sistema exija nova geração
       await db.number.deleteMany({ where: { raffleId: id } });
-
-      const batchSize = 10000;
-      const total = data.totalNumbers;
-      for (let i = 0; i < total; i += batchSize) {
-        const currentBatchSize = Math.min(batchSize, total - i);
-        const batch = Array.from({ length: currentBatchSize }, (_, index) => ({
-          raffleId: id,
-          number: i + index,
-          status: "AVAILABLE" as const,
-        }));
-        await db.number.createMany({ data: batch, skipDuplicates: true });
-      }
     }
 
     const updated = await db.raffle.update({
