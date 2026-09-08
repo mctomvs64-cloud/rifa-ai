@@ -29,7 +29,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   try {
-    const raffle = await db.raffle.findUnique({ where: { id } });
+    const raffle = await db.raffle.findUnique({ 
+      where: { id },
+      include: { _count: { select: { numbers: true } } }
+    });
 
     if (!raffle) {
       return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
@@ -51,19 +54,51 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const data = parsed.data;
 
-    // Se o total de cotas mudou, apenas deletamos os números antigos para que o 
-    // botão "Gerar Bilhetes" apareça novamente e faça a geração com a nova quantidade.
-    // Gerar milhares de cotas no meio de um PATCH causa timeout na API.
+    // Atualização dinâmica de cotas
     if (data.totalNumbers !== undefined && data.totalNumbers !== raffle.totalNumbers) {
-      if (raffle.status !== "DRAFT") {
-        return NextResponse.json(
-          { error: "Só é possível alterar o total de cotas em rascunhos (DRAFT)" },
-          { status: 400 }
-        );
-      }
+      const newTotal = data.totalNumbers;
+      const oldTotal = raffle.totalNumbers;
       
-      // Apaga os números atuais (se houver) para que o sistema exija nova geração
-      await db.number.deleteMany({ where: { raffleId: id } });
+      // Se os números já foram gerados, precisamos criar os novos ou deletar os excedentes
+      if (raffle._count.numbers > 0) {
+        if (newTotal > oldTotal) {
+          // Aumentou as cotas: gerar os números faltantes (do oldTotal até newTotal - 1)
+          const batchSize = 10000;
+          for (let i = oldTotal; i < newTotal; i += batchSize) {
+            const currentBatchSize = Math.min(batchSize, newTotal - i);
+            const batch = Array.from({ length: currentBatchSize }, (_, index) => ({
+              raffleId: id,
+              number: i + index,
+              status: "AVAILABLE" as const,
+            }));
+            await db.number.createMany({ data: batch, skipDuplicates: true });
+          }
+        } else if (newTotal < oldTotal) {
+          // Diminuiu as cotas: verificar se há cotas vendidas/reservadas no intervalo a ser deletado
+          const soldOrReserved = await db.number.findFirst({
+            where: {
+              raffleId: id,
+              number: { gte: newTotal },
+              status: { in: ["SOLD", "RESERVED"] }
+            }
+          });
+          
+          if (soldOrReserved) {
+            return NextResponse.json(
+              { error: `Não é possível reduzir para ${newTotal} pois a cota nº ${soldOrReserved.number} já foi vendida ou reservada.` },
+              { status: 400 }
+            );
+          }
+          
+          // Deletar os excedentes
+          await db.number.deleteMany({
+            where: {
+              raffleId: id,
+              number: { gte: newTotal }
+            }
+          });
+        }
+      }
     }
 
     const updated = await db.raffle.update({

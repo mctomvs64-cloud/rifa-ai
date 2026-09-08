@@ -199,25 +199,23 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
                 </div>
               </div>
 
-              {/* Total de Cotas — só editável em DRAFT */}
-              {raffle.status === "DRAFT" && (
-                <div>
-                  <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-                    Total de Cotas
-                  </label>
-                  <input
-                    type="number"
-                    min="10"
-                    max="100000"
-                    value={formData.totalNumbers}
-                    onChange={(e) => setFormData({ ...formData, totalNumbers: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
-                  />
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
-                    ⚠️ Alterar regenera todos os números (apenas em rascunho)
-                  </p>
-                </div>
-              )}
+              {/* Total de Cotas */}
+              <div>
+                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+                  Total de Cotas
+                </label>
+                <input
+                  type="number"
+                  min="10"
+                  max="100000"
+                  value={formData.totalNumbers}
+                  onChange={(e) => setFormData({ ...formData, totalNumbers: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
+                  ⚠️ Se a rifa estiver ativa e tiver vendas, cotas excedentes/faltantes serão ajustadas.
+                </p>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
