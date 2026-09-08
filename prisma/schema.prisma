@@ -30,10 +30,11 @@ enum UserStatus {
 }
 
 enum RaffleStatus {
-  DRAFT   // Rascunho (não publicada)
-  ACTIVE  // Ativa (compradores podem ver e comprar)
-  CLOSED  // Encerrada para novas compras
-  DRAWN   // Sorteio realizado
+  DRAFT      // Rascunho (não publicada)
+  ACTIVE     // Ativa (compradores podem ver e comprar)
+  CLOSED     // Encerrada para novas compras
+  DRAWN      // Sorteio realizado
+  CANCELLED  // Cancelada pelo vendedor ou admin
 }
 
 enum NumberStatus {

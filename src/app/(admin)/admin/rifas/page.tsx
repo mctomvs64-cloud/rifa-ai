@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { EditRaffleModal } from "@/components/raffle/edit-raffle-modal";
 import { DeleteRaffleButton } from "@/components/raffle/delete-raffle-button";
+import { RedeployButton } from "@/components/admin/redeploy-button";
 
 export default async function MonitoramentoRifasPage() {
   const session = await auth();
@@ -26,6 +27,7 @@ export default async function MonitoramentoRifasPage() {
           <h1 className="font-display text-3xl font-bold">Monitoramento de Rifas</h1>
           <p className="text-muted-foreground">Visão geral ("God Mode") de todas as rifas ativas, pendentes ou encerradas.</p>
         </div>
+        <RedeployButton />
       </div>
 
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
@@ -85,6 +87,7 @@ export default async function MonitoramentoRifasPage() {
                         description: raffle.description,
                         prize: raffle.prize,
                         pricePerNumber: Number(raffle.pricePerNumber),
+                        totalNumbers: raffle.totalNumbers,
                         minNumbers: raffle.minNumbers,
                         maxNumbers: raffle.maxNumbers,
                         whatsappNumber: raffle.whatsappNumber,

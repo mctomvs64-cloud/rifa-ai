@@ -123,6 +123,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
               description: raffle.description,
               prize: raffle.prize,
               pricePerNumber: Number(raffle.pricePerNumber),
+              totalNumbers: raffle.totalNumbers,
               minNumbers: raffle.minNumbers,
               maxNumbers: raffle.maxNumbers,
               whatsappNumber: raffle.whatsappNumber,

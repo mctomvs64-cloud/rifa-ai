@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { RedeployButton } from "@/components/admin/redeploy-button";
 
 export default async function AdminDashboard() {
   const session = await auth();
@@ -78,6 +79,7 @@ export default async function AdminDashboard() {
           >
             ⚙️ Configurações
           </Link>
+          <RedeployButton />
         </div>
       </div>
 

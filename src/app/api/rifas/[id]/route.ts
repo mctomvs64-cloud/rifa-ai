@@ -3,12 +3,14 @@ import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 const updateRaffleSchema = z.object({
   title: z.string().min(3).max(100).optional(),
   description: z.string().optional().nullable(),
   prize: z.string().min(3).optional(),
   pricePerNumber: z.number().min(0.5).optional(),
+  totalNumbers: z.number().min(10).max(100000).optional(),
   minNumbers: z.number().min(1).optional(),
   maxNumbers: z.number().min(1).optional(),
   whatsappNumber: z.string().optional().nullable(),
@@ -49,6 +51,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const data = parsed.data;
 
+    // If totalNumbers changed, regenerate numbers for DRAFT raffles
+    if (data.totalNumbers !== undefined && data.totalNumbers !== raffle.totalNumbers) {
+      if (raffle.status !== "DRAFT") {
+        return NextResponse.json(
+          { error: "Só é possível alterar o total de cotas em rascunhos (DRAFT)" },
+          { status: 400 }
+        );
+      }
+      // Delete existing numbers and regenerate
+      await db.number.deleteMany({ where: { raffleId: id } });
+
+      const batchSize = 10000;
+      const total = data.totalNumbers;
+      for (let i = 0; i < total; i += batchSize) {
+        const currentBatchSize = Math.min(batchSize, total - i);
+        const batch = Array.from({ length: currentBatchSize }, (_, index) => ({
+          raffleId: id,
+          number: i + index,
+          status: "AVAILABLE" as const,
+        }));
+        await db.number.createMany({ data: batch, skipDuplicates: true });
+      }
+    }
+
     const updated = await db.raffle.update({
       where: { id },
       data: {
@@ -56,6 +82,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(data.description !== undefined && { description: data.description }),
         ...(data.prize !== undefined && { prize: data.prize }),
         ...(data.pricePerNumber !== undefined && { pricePerNumber: data.pricePerNumber }),
+        ...(data.totalNumbers !== undefined && { totalNumbers: data.totalNumbers }),
         ...(data.minNumbers !== undefined && { minNumbers: data.minNumbers }),
         ...(data.maxNumbers !== undefined && { maxNumbers: data.maxNumbers }),
         ...(data.whatsappNumber !== undefined && { whatsappNumber: data.whatsappNumber?.replace(/\D/g, "") ?? null }),
@@ -65,6 +92,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(data.status !== undefined && { status: data.status }),
       },
     });
+
+    // Invalidate public raffle page and dashboard caches
+    revalidatePath(`/rifas/${raffle.slug}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/admin/rifas");
 
     return NextResponse.json({ raffle: updated });
   } catch (error) {
