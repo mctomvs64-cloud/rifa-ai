@@ -10,14 +10,14 @@ export function SellerSidebar() {
 
   const links = [
     { href: "/dashboard", label: "Painel Geral", icon: "📊" },
-    { href: "/dashboard/rifas/nova", label: "Nova Rifa", icon: "➕" },
+    { href: "/dashboard/rifas/nova", label: "Nova Vaquinha", icon: "➕" },
   ];
 
   return (
     <aside className="w-64 bg-card border-r flex flex-col h-full min-h-screen sticky top-0">
       <div className="h-16 flex items-center px-6 border-b">
         <Link href="/dashboard" className="font-display font-bold text-xl text-primary">
-          🎫 RifaAI <span className="text-sm font-normal text-muted-foreground">Seller</span>
+          💚 VaquinhaAI <span className="text-sm font-normal text-muted-foreground">Seller</span>
         </Link>
       </div>
 

@@ -41,7 +41,7 @@ export function RaffleCard({ raffle }: RaffleCardProps) {
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-6xl">🎫</span>
+            <span className="text-6xl">💚</span>
           </div>
         )}
 
@@ -56,7 +56,7 @@ export function RaffleCard({ raffle }: RaffleCardProps) {
         {/* Badge de progresso */}
         <div className="absolute top-3 right-3">
           <span className="bg-black/50 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-            {progress}% vendido
+            {progress}% doado
           </span>
         </div>
       </div>
@@ -84,21 +84,21 @@ export function RaffleCard({ raffle }: RaffleCardProps) {
         {/* Barra de progresso */}
         <div className="mb-3">
           <div className="flex justify-between text-xs text-muted-foreground mb-1">
-            <span>{raffle.soldCount} vendidos</span>
+            <span>{raffle.soldCount} números doados</span>
             <span>{available} disponíveis</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-blue-400 rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        {/* Rodapé: preço + data */}
+        {/* Rodapé: valor doação + encerramento */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground">Por número</div>
+            <div className="text-xs text-muted-foreground">Doação mínima</div>
             <div className="font-display font-bold text-lg text-accent">
               {formatCurrency(raffle.pricePerNumber)}
             </div>
@@ -106,7 +106,7 @@ export function RaffleCard({ raffle }: RaffleCardProps) {
 
           {raffle.drawDate && (
             <div className="text-right">
-              <div className="text-xs text-muted-foreground">Sorteio</div>
+              <div className="text-xs text-muted-foreground">Encerramento</div>
               <div className="text-sm font-medium">
                 {formatDate(raffle.drawDate)}
               </div>
@@ -117,8 +117,8 @@ export function RaffleCard({ raffle }: RaffleCardProps) {
 
       {/* CTA */}
       <div className="px-4 pb-4">
-        <div className="w-full text-center bg-primary text-primary-foreground text-sm font-semibold py-2.5 rounded-lg group-hover:bg-primary/90 transition-colors">
-          Participar →
+        <div className="w-full text-center bg-green-600 text-white text-sm font-semibold py-2.5 rounded-lg group-hover:bg-green-700 transition-colors">
+          💚 Contribuir →
         </div>
       </div>
     </Link>

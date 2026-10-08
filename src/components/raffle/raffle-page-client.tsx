@@ -124,8 +124,8 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
 
             {raffle.drawDate && (
               <div className="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md px-3 py-2 rounded-xl text-white text-xs flex items-center justify-between border border-white/10">
-                <span className="text-slate-300">Data do Sorteio:</span>
-                <span className="font-bold text-amber-400">{formatDateTime(raffle.drawDate)}</span>
+                <span className="text-slate-300">Encerramento da Campanha:</span>
+                <span className="font-bold text-emerald-400">{formatDateTime(raffle.drawDate)}</span>
               </div>
             )}
           </div>
@@ -136,44 +136,49 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
               <h1 className="font-display font-black text-2xl tracking-tight text-foreground leading-snug mb-1">
                 {raffle.title}
               </h1>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-bold">
-                <span>🏆 Prêmio:</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                <span>🏆 Prêmio da Campanha:</span>
                 <span>{raffle.prize}</span>
               </div>
             </div>
 
-            {/* Preço Unitário */}
+            {/* Valor da Doação */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-muted/80 to-muted/40 border border-border/70 flex items-center justify-between">
               <div>
-                <span className="text-xs font-medium text-muted-foreground block">Valor por cota</span>
+                <span className="text-xs font-medium text-muted-foreground block">Valor por número</span>
                 <span className="font-display font-black text-2xl text-foreground">
                   {formatCurrency(raffle.pricePerNumber)}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-xs text-muted-foreground block">Total de cotas</span>
+                <span className="text-xs text-muted-foreground block">Total de números</span>
                 <span className="font-bold text-sm text-foreground">{raffle.totalNumbers}</span>
               </div>
             </div>
 
-            {/* Barra de Progresso de Vendas */}
+            {/* Informação sobre sorteio externo */}
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
+              ⚖️ <strong>Sorteio externo:</strong> O organizador realizará o sorteio e anunciará o vencedor pelo WhatsApp.
+            </div>
+
+            {/* Barra de Progresso das Doações */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs font-bold">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <span>📊</span> Progresso de vendas
+                  <span>📊</span> Progresso da campanha
                 </span>
-                <span className="text-primary font-black">{progressPercent}%</span>
+                <span className="text-green-600 dark:text-green-400 font-black">{progressPercent}%</span>
               </div>
               <div className="h-3 w-full bg-muted rounded-full overflow-hidden p-0.5 border border-border/50">
                 <div
-                  className="h-full bg-gradient-to-r from-primary via-accent to-amber-500 rounded-full transition-all duration-700"
+                  className="h-full bg-gradient-to-r from-green-500 via-emerald-500 to-green-400 rounded-full transition-all duration-700"
                   style={{ width: `${Math.min(100, Math.max(3, progressPercent))}%` }}
                 />
               </div>
               <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1">
                 <span>🟢 {stats.availableCount} livres</span>
-                <span>🟡 {stats.reservedCount} reservadas</span>
-                <span>🔒 {stats.soldCount} pagas</span>
+                <span>🟡 {stats.reservedCount} reservados</span>
+                <span>💚 {stats.soldCount} doados</span>
               </div>
             </div>
 
@@ -184,41 +189,41 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
               </div>
             )}
 
-            {/* Garantias & Segurança */}
+            {/* Garantias & Transparência */}
             <div className="pt-3 border-t border-border space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">✓</span>
-                <span>Pagamento instantâneo e seguro — <strong>PIX ou Cartão</strong></span>
+                <span>Doação via <strong>PIX instantâneo</strong> — confirmação automática</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">✓</span>
-                <span>Comprovante e confirmação automática no WhatsApp</span>
+                <span>Seus números chegam no <strong>WhatsApp</strong> após a doação</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-500">✓</span>
-                <span>Reserva garantida por 15 minutos até o pagamento</span>
+                <span>Sorteio externo realizado pelo organizador com transparência</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Carrinho / Sticky Checkout Lateral */}
-        <div className="bg-card border-2 border-primary/20 rounded-3xl p-6 shadow-xl sticky top-24 space-y-5">
+        <div className="bg-card border-2 border-green-500/20 rounded-3xl p-6 shadow-xl sticky top-24 space-y-5">
           <div className="flex items-center justify-between border-b border-border/60 pb-3">
             <h3 className="font-display font-bold text-lg flex items-center gap-2">
-              <span>🛒</span> Seu Carrinho
+              <span>💚</span> Sua Doação
             </h3>
             {selectedNumbers.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                {selectedNumbers.length} selecionada{selectedNumbers.length > 1 ? "s" : ""}
+              <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold">
+                {selectedNumbers.length} número{selectedNumbers.length > 1 ? "s" : ""}
               </span>
             )}
           </div>
 
           {selectedNumbers.length === 0 ? (
             <div className="py-6 text-center text-muted-foreground space-y-2">
-              <div className="text-3xl opacity-60">👆</div>
-              <p className="text-xs font-medium">Selecione suas cotas no painel ao lado para continuar.</p>
+              <div className="text-3xl opacity-60">💚</div>
+              <p className="text-xs font-medium">Escolha seus números ao lado para fazer sua doação.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -258,7 +263,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
               {/* Total & Botão */}
               <div className="pt-3 border-t border-border/60 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Valor Total:</span>
+                  <span className="text-sm text-muted-foreground">Total da Doação:</span>
                   <span className="font-display font-black text-2xl text-foreground">
                     {formatCurrency(totalAmount)}
                   </span>
@@ -266,9 +271,9 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-4 rounded-2xl font-display font-black text-base tracking-wide bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25 transition-all transform active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-4 rounded-2xl font-display font-black text-base tracking-wide bg-gradient-to-r from-green-500 via-emerald-600 to-green-500 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 transition-all transform active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Pagar Agora</span>
+                  <span>💚 Confirmar Doação</span>
                   <span>⚡</span>
                 </button>
 
@@ -328,7 +333,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
           <div className="max-w-md mx-auto flex items-center justify-between gap-4">
             <div>
               <div className="text-xs text-muted-foreground font-medium">
-                {selectedNumbers.length} cota{selectedNumbers.length > 1 ? "s" : ""} selecionada{selectedNumbers.length > 1 ? "s" : ""}
+                {selectedNumbers.length} número{selectedNumbers.length > 1 ? "s" : ""} selecionado{selectedNumbers.length > 1 ? "s" : ""}
               </div>
               <div className="font-display font-black text-xl text-foreground">
                 {formatCurrency(totalAmount)}
@@ -336,9 +341,9 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
             </div>
             <button
               onClick={handleCheckout}
-              className="px-6 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md flex items-center gap-2"
+              className="px-6 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md flex items-center gap-2"
             >
-              <span>Pagar Agora</span>
+              <span>💚 Confirmar Doação</span>
               <span>⚡</span>
             </button>
           </div>

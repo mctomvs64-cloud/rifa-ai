@@ -67,8 +67,8 @@ export async function generateMetadata({
   if (!raffle) return { title: "Rifa não encontrada" };
 
   return {
-    title: `${raffle.title} — RifaAI`,
-    description: `${raffle.prize} | R$ ${Number(raffle.pricePerNumber).toFixed(2)} por número | ${raffle.totalNumbers} cotas`,
+    title: `${raffle.title} — VaquinhaAI`,
+    description: `${raffle.prize} | Done R$ ${Number(raffle.pricePerNumber).toFixed(2)} por número | ${raffle.totalNumbers} números disponíveis`,
     openGraph: {
       images: raffle.coverImage ? [raffle.coverImage] : [],
     },

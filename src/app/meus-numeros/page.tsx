@@ -51,7 +51,7 @@ export default function MeusNumerosPage() {
           <div className="text-center mb-10">
             <h1 className="font-display text-4xl font-bold mb-4">Meus Números</h1>
             <p className="text-muted-foreground">
-              Digite seu WhatsApp para encontrar todas as rifas que você comprou.
+              Digite seu WhatsApp para encontrar todas as vaquinhas que você apoiou e seus números do sorteio.
             </p>
           </div>
 
@@ -93,10 +93,10 @@ export default function MeusNumerosPage() {
                       </div>
                       
                       <div className="mt-4">
-                        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Seus Números</div>
+                        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Seus Números da Sorte</div>
                         <div className="flex flex-wrap gap-2">
                           {order.numbers.map((n: any) => (
-                            <span key={n.number} className="bg-muted px-2.5 py-1 rounded-md text-sm font-medium border border-border">
+                            <span key={n.number} className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-md text-sm font-medium border border-emerald-200 dark:border-emerald-800">
                               {String(n.number).padStart(3, '0')}
                             </span>
                           ))}
@@ -108,17 +108,17 @@ export default function MeusNumerosPage() {
                       <div>
                         <div className="text-xs text-muted-foreground uppercase text-left sm:text-right mb-1">Status</div>
                         <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase
-                          ${order.status === 'PAID' ? 'bg-green-100 text-green-800' : ''}
+                          ${order.status === 'PAID' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : ''}
                           ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : ''}
                           ${order.status === 'CANCELLED' || order.status === 'EXPIRED' ? 'bg-red-100 text-red-800' : ''}
                         `}>
-                          {order.status === 'PAID' ? 'Pago' : order.status === 'PENDING' ? 'Aguardando Pagamento' : order.status}
+                          {order.status === 'PAID' ? '💚 Doação Confirmada' : order.status === 'PENDING' ? 'Aguardando Pagamento' : order.status}
                         </span>
                       </div>
                       
                       <div className="mt-4 sm:mt-0 text-left sm:text-right">
-                        <div className="text-xs text-muted-foreground uppercase">Total Pago</div>
-                        <div className="font-bold text-lg text-accent">{formatCurrency(order.totalAmount)}</div>
+                        <div className="text-xs text-muted-foreground uppercase">Total Doado</div>
+                        <div className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatCurrency(order.totalAmount)}</div>
                       </div>
                     </div>
                   </div>

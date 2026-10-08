@@ -10,9 +10,9 @@ export function AdminSidebar() {
 
   const links = [
     { href: "/admin", label: "Visão Geral", icon: "📈" },
-    { href: "/admin/rifas", label: "Monitoramento", icon: "🎟️" },
+    { href: "/admin/rifas", label: "Vaquinhas", icon: "💚" },
     { href: "/admin/repasses", label: "Repasses", icon: "💰" },
-    { href: "/admin/vendedores", label: "Vendedores", icon: "👥" },
+    { href: "/admin/vendedores", label: "Organizadores", icon: "👥" },
     { href: "/admin/configuracoes", label: "Configurações", icon: "⚙️" },
   ];
 
@@ -20,7 +20,7 @@ export function AdminSidebar() {
     <aside className="w-64 bg-navy-950 text-white flex flex-col h-full min-h-screen sticky top-0">
       <div className="h-16 flex items-center px-6 border-b border-white/10">
         <Link href="/admin" className="font-display font-bold text-xl text-yellow-400">
-          🎫 RifaAI <span className="text-sm font-normal text-blue-200">Admin</span>
+          💚 VaquinhaAI <span className="text-sm font-normal text-blue-200">Admin</span>
         </Link>
       </div>
 

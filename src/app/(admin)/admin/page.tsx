@@ -46,14 +46,14 @@ export default async function AdminDashboard() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="font-display text-3xl font-bold">Admin: Visão Geral</h1>
-          <p className="text-muted-foreground">Controle central da plataforma RifaAI</p>
+          <p className="text-muted-foreground">Controle central da plataforma VaquinhaAI</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
             href="/admin/rifas"
             className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3.5 py-2 rounded-lg font-medium text-sm transition-colors"
           >
-            🎟️ Rifas
+            💚 Vaquinhas
           </Link>
           <Link
             href="/admin/repasses"
@@ -98,7 +98,7 @@ export default async function AdminDashboard() {
           </div>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-sm">
-          <div className="text-sm font-medium text-muted-foreground mb-2">Rifas Ativas / Total</div>
+          <div className="text-sm font-medium text-muted-foreground mb-2">Campanhas Ativas / Total</div>
           <div className="font-display text-3xl font-bold text-foreground flex items-baseline gap-2">
             <span className="text-green-600 dark:text-green-400">{activeRaffles}</span>
             <span className="text-xl text-muted-foreground">/ {totalRaffles}</span>
@@ -116,14 +116,14 @@ export default async function AdminDashboard() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Rifas Recentes */}
         <div className="lg:col-span-2">
-          <h2 className="font-display text-xl font-bold mb-4">Rifas Criadas Recentemente</h2>
+          <h2 className="font-display text-xl font-bold mb-4">Vaquinhas Criadas Recentemente</h2>
           <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Rifa</th>
-                  <th className="px-6 py-4 font-medium">Vendedor</th>
-                  <th className="px-6 py-4 font-medium">Preço (Cota)</th>
+                  <th className="px-6 py-4 font-medium">Campanha</th>
+                  <th className="px-6 py-4 font-medium">Organizador</th>
+                  <th className="px-6 py-4 font-medium">Valor (Número)</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                 </tr>
               </thead>
@@ -148,7 +148,7 @@ export default async function AdminDashboard() {
                 {recentRaffles.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
-                      Nenhuma rifa criada ainda.
+                      Nenhuma vaquinha criada ainda.
                     </td>
                   </tr>
                 )}
@@ -164,7 +164,7 @@ export default async function AdminDashboard() {
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-500 rounded-lg text-sm flex gap-3">
               <span>⚠️</span>
               <div>
-                <strong>Curadoria de Vendedores:</strong> Atualmente qualquer usuário pode se cadastrar como vendedor e criar rifas. 
+                <strong>Curadoria de Organizadores:</strong> Qualquer usuário pode se cadastrar como organizador e criar vaquinhas. 
                 Vá em Configurações para exigir aprovação manual.
               </div>
             </div>

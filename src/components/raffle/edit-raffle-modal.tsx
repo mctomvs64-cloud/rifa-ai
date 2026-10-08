@@ -91,14 +91,14 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
         onClick={() => setIsOpen(true)}
         className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground border rounded-lg font-semibold text-sm transition-colors flex items-center gap-1.5"
       >
-        ✏️ Editar Rifa
+        ✏️ Editar Vaquinha
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
           <div className="bg-background text-foreground w-full max-w-lg rounded-2xl shadow-2xl border border-border p-6 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-border pb-3">
-              <h3 className="font-display text-xl font-bold">✏️ Editar Rifa</h3>
+              <h3 className="font-display text-xl font-bold">✏️ Editar Vaquinha</h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 text-foreground flex items-center justify-center text-sm font-bold transition-colors"
@@ -111,7 +111,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
               {/* Imagens com Upload Real */}
               <div className="space-y-4 pb-4 border-b border-border">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  📸 Imagens da Rifa
+                  📸 Imagens da Campanha
                 </h4>
 
                 <ImageUpload
@@ -131,7 +131,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
 
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-                  Título da Rifa
+                  Título da Vaquinha
                 </label>
                 <input
                   required
@@ -155,7 +155,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
 
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-                  Prêmio
+                  Prêmio da Campanha
                 </label>
                 <input
                   required
@@ -168,7 +168,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-                    Preço por Cota (R$)
+                    Valor por Número (R$)
                   </label>
                   <input
                     required
@@ -190,7 +190,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
                   >
-                    <option value="DRAFT">Rascunho (DRAFT)</option>
+                  <option value="DRAFT">Rascunho (DRAFT)</option>
                     <option value="ACTIVE">Ativa / Lançada (ACTIVE)</option>
                     <option value="CLOSED">Encerrada (CLOSED)</option>
                     <option value="DRAWN">Sorteada (DRAWN)</option>
@@ -202,7 +202,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
               {/* Total de Cotas */}
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-                  Total de Cotas
+                  Total de Números Disponíveis
                 </label>
                 <input
                   type="number"

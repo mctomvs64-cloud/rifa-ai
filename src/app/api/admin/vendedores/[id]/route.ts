@@ -75,14 +75,14 @@ export async function PATCH(
       );
     }
 
-    const { email, ...data } = parsed.data;
+    let data: Record<string, any> = { ...parsed.data };
+    const email = parsed.data.email;
 
     if (email) {
       const existing = await db.user.findUnique({ where: { email } });
       if (existing && existing.id !== id) {
         return NextResponse.json({ error: "Email já está em uso" }, { status: 409 });
       }
-      data.email = email;
     }
 
     if (data.image === "") {

@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     // Busca a rifa
     const raffle = await db.raffle.findUnique({
       where: { id: raffleId, status: "ACTIVE" },
+      include: { owner: true },
     });
 
     if (!raffle) {
@@ -131,9 +132,14 @@ export async function POST(req: NextRequest) {
         Number(raffle.platformFeePercent)
       );
 
+      const orderId = `ord_${Math.random().toString(36).substring(2, 11)}`;
+      const text = `Olá, acabei de fazer uma doação na vaquinha *${raffle.title}*. Meu pedido é *${orderId}*. Segue o comprovante!`;
+      const wpp = `https://wa.me/55${raffle.owner.phone}?text=${encodeURIComponent(text)}`;
+
       // Cria o pedido
       const order = await tx.order.create({
         data: {
+          id: orderId,
           raffleId,
           buyerName,
           buyerPhone: buyerPhone.replace(/\D/g, ""),
@@ -144,6 +150,7 @@ export async function POST(req: NextRequest) {
           sellerAmount,
           status: "PENDING",
           expiresAt,
+          whatsappLink: wpp,
           reservedNumbers: numbers, // snapshot dos números para preservação do lead após liberação
           ...(promotion ? { promotionId: promotion.id } : {}),
         },
@@ -166,47 +173,16 @@ export async function POST(req: NextRequest) {
       return { order, expiresAt };
     });
 
-    // Cria o pagamento PIX no Mercado Pago (fora da transação DB)
-    let qrCode = null;
-    let qrCodeBase64 = null;
-    let pixCopyPaste = null;
-    let mpPaymentId = null;
-
-    try {
-      const { createPixPayment } = await import("@/lib/mercadopago");
-      const orderWithRaffle = await db.order.findUnique({
-        where: { id: result.order.id },
-        include: { raffle: true },
-      });
-
-      if (orderWithRaffle) {
-        const pixData = await createPixPayment({
-          order: orderWithRaffle,
-          numbers,
-          buyerName,
-          buyerEmail: buyerEmail ?? `comprador.${result.order.id.slice(0, 8)}@rifaai.com.br`,
-          buyerPhone: buyerPhone.replace(/\D/g, ""),
-        });
-
-        qrCode = pixData.qrCode;
-        qrCodeBase64 = pixData.qrCodeBase64;
-        pixCopyPaste = pixData.pixCopyPaste;
-        mpPaymentId = pixData.paymentId;
-
-        // Salva o payment ID e QR Code no pedido
-        await db.order.update({
-          where: { id: result.order.id },
-          data: {
-            mpPaymentId,
-            mpQrCode: qrCodeBase64,
-            mpQrCodeText: pixCopyPaste,
-          },
-        });
-      }
-    } catch (mpError) {
-      console.error("[Orders] Erro ao criar pagamento PIX no MP:", mpError);
-      // Não cancela o pedido — comprador pode tentar novamente ou pagar manualmente
-    }
+    // Em vez de Mercado Pago, usa a chave PIX estática do vendedor
+    const pixCopyPaste = "00020101021126580014br.gov.bcb.pix0136bf847a12-47a6-4d2e-bf8e-987930526b5d5204000053039865802BR5920EVERTON P DOS SANTOS6013FLORIANOPOLIS62070503***6304CDB8";
+    
+    // Atualiza o pedido com o código PIX
+    await db.order.update({
+      where: { id: result.order.id },
+      data: {
+        mpQrCodeText: pixCopyPaste,
+      },
+    });
 
     return applySecurityHeaders(
       NextResponse.json(
@@ -214,12 +190,13 @@ export async function POST(req: NextRequest) {
           orderId: result.order.id,
           totalAmount: Number(result.order.totalAmount),
           expiresAt: result.expiresAt.toISOString(),
+          whatsappLink: result.order.whatsappLink,
           numbers,
           pix: {
-            qrCode,
-            qrCodeBase64,
+            qrCode: null,
+            qrCodeBase64: null,
             copyPaste: pixCopyPaste,
-            paymentId: mpPaymentId,
+            paymentId: null,
           },
         },
         { status: 201 }

@@ -65,34 +65,7 @@ export function CheckoutModal({
     return () => clearInterval(timerRef.current!);
   }, [expiresAt]);
 
-  // ── Polling de Status com detecção de expiração ──────────────────
-  const pollStatus = useCallback(async () => {
-    if (!orderId) return;
-    try {
-      const res = await fetch(`/api/orders/status?orderId=${orderId}`, { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.status === "PAID") {
-        setPollingActive(false);
-        if (pollingRef.current) clearInterval(pollingRef.current);
-        setWhatsappLink(data.whatsappLink ?? null);
-        setStep("confirmed");
-      } else if (data.status === "CANCELLED" || data.status === "EXPIRED") {
-        setPollingActive(false);
-        if (pollingRef.current) clearInterval(pollingRef.current);
-      }
-    } catch {
-      // Ignore background network blips
-    }
-  }, [orderId]);
-
-  useEffect(() => {
-    if (!pollingActive || !orderId) return;
-    pollingRef.current = setInterval(pollStatus, 4000);
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, [pollingActive, orderId, pollStatus]);
+  // Sem polling automático — a confirmação será manual pelo WhatsApp
 
   // Cleanup on unmount
   useEffect(() => {
@@ -131,38 +104,10 @@ export function CheckoutModal({
     setFormData({ ...formData, phone: formatted });
   };
 
-  const openCheckoutPro = async (existingOrderId: string): Promise<boolean> => {
-    try {
-      const proRes = await fetch(
-        `/api/orders/checkout-pro?orderId=${encodeURIComponent(existingOrderId)}&raffleId=${encodeURIComponent(raffleId)}`,
-        { method: "POST" }
-      );
-      const proData = await proRes.json().catch(() => ({}) as Record<string, unknown>);
+  // openCheckoutPro removido
 
-      if (proRes.ok && proData.sdk_url) {
-        window.location.href = proData.sdk_url as string;
-        return true; // redirecionando — mantém isProcessing
-      }
-      setErrorMsg(
-        (proData.error as string) || "Não foi possível abrir o pagamento com cartão. Tente pelo PIX."
-      );
-    } catch {
-      setErrorMsg("Erro ao conectar ao Mercado Pago. Tente pelo PIX.");
-    }
-    return false;
-  };
-
-  const processOrder = async (method: PayMethod) => {
-    setPayMethod(method);
     setIsProcessing(true);
     setErrorMsg(null);
-
-    // Se já existe um pedido pendente desta sessão, reutiliza em vez de criar outro
-    if (method === "pro" && orderId) {
-      const ok = await openCheckoutPro(orderId);
-      if (!ok) setIsProcessing(false);
-      return;
-    }
 
     try {
       const res = await fetch("/api/orders", {
@@ -198,22 +143,15 @@ export function CheckoutModal({
 
       if (data.expiresAt) setExpiresAt(new Date(data.expiresAt as string));
 
-      // ── Fluxo Checkout Pro (cartão e outros métodos) ──
-      if (method === "pro") {
-        const ok = await openCheckoutPro(data.orderId as string);
-        if (!ok) setIsProcessing(false);
-        return;
-      }
-
-      if ((data.pix as Record<string, unknown>)?.qrCodeBase64) {
+      if (data.pix) {
         const pix = data.pix as Record<string, string>;
         setPixData({
-          qrCodeBase64: pix.qrCodeBase64,
+          qrCodeBase64: "", // não usamos mais
           copyPaste: pix.copyPaste,
           paymentId: pix.paymentId,
         });
+        setWhatsappLink((data.whatsappLink as string) || null);
         setStep("pix");
-        setPollingActive(true);
       } else {
         router.push(`/checkout/sucesso/${data.orderId}`);
       }
@@ -228,10 +166,7 @@ export function CheckoutModal({
     await processOrder("pix");
   };
 
-  const handleCheckoutPro = async () => {
-    if (isProcessing) return;
-    await processOrder("pro");
-  };
+
 
   const copyToClipboard = async () => {
     if (!pixData?.copyPaste) return;
@@ -431,20 +366,7 @@ export function CheckoutModal({
                     )}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleCheckoutPro}
-                    disabled={isProcessing}
-                    className="w-full py-4 rounded-2xl font-display font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
-                    style={{ background: "#1f2d3a", border: "1.5px solid #009ee3", color: "#009ee3" }}
-                  >
-                    <span>💳</span>
-                    <span>
-                      {isProcessing && payMethod === "pro"
-                        ? "Abrindo Mercado Pago..."
-                        : "Escolher outro método de pagamento"}
-                    </span>
-                  </button>
+
                 </div>
 
                 {/* Erro inline — sem popup */}
@@ -496,9 +418,8 @@ export function CheckoutModal({
                   </div>
                 )}
                 <div className={coverImage ? "pt-8" : ""}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixData.copyPaste)}`}
                     alt="QR Code PIX"
                     className="w-56 h-56 object-contain"
                   />
@@ -541,20 +462,24 @@ export function CheckoutModal({
                 </div>
               </div>
 
-              {/* Indicador de Espera */}
-              <div className="p-3.5 rounded-2xl flex items-center justify-center gap-2.5 text-xs" style={{ background: "#242424", border: "1px solid #333", color: "#999" }}>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <span className="font-medium">Aguardando confirmação bancária em tempo real...</span>
+              {/* Botão de enviar comprovante */}
+              <div className="pt-2">
+                {whatsappLink && (
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-4 rounded-2xl font-display font-bold text-sm text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    style={{ background: "#059669", boxShadow: "0 6px 20px rgba(5,150,105,0.3)" }}
+                  >
+                    <span>💬</span>
+                    <span>Já paguei! Enviar comprovante</span>
+                  </a>
+                )}
+                <p className="text-[11px] text-center mt-3" style={{ color: "#888" }}>
+                  A liberação dos seus números será feita após a confirmação do comprovante.
+                </p>
               </div>
-
-              {/* Botão de fallback */}
-              <button
-                onClick={() => router.push(`/checkout/sucesso/${orderId}`)}
-                className="w-full py-3 rounded-2xl font-semibold text-xs transition-colors"
-                style={{ background: "#242424", border: "1px solid #333", color: "#999" }}
-              >
-                Já realizei o pagamento →
-              </button>
             </div>
           )}
 

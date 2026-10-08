@@ -11,6 +11,7 @@ import { DeleteRaffleButton } from "@/components/raffle/delete-raffle-button";
 import { CloseRaffleButton } from "@/components/raffle/close-raffle-button";
 import { BuyersExportButton, type BuyerRecord } from "@/components/raffle/buyers-export-button";
 import { CheckoutProButton } from "@/components/checkout/checkout-pro-button";
+import { ConfirmPaymentButton } from "./confirm-payment-button";
 
 const STATUS_ORDER: Record<string, number> = { PAID: 0, PENDING: 1, EXPIRED: 2 };
 
@@ -289,14 +290,17 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
                     </div>
                   </div>
                   {r.status !== "PAID" && (
-                    <a
-                      href={recoveryLink(r)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-2 rounded-lg text-xs transition-colors whitespace-nowrap"
-                    >
-                      💬 Recuperar venda
-                    </a>
+                    <div className="flex flex-col gap-2">
+                      <ConfirmPaymentButton orderId={r.id} />
+                      <a
+                        href={recoveryLink(r)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-2 rounded-lg text-xs transition-colors whitespace-nowrap text-center"
+                      >
+                        💬 Recuperar venda
+                      </a>
+                    </div>
                   )}
                 </div>
               </div>
@@ -310,7 +314,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
         raffleId={raffle.id}
         orderId={`raf_${raffle.id}`}
         raffleTitle={raffle.title}
-        totalAmount={Number(raffle.totalNumbers * raffle.pricePerNumber)}
+        totalAmount={raffle.totalNumbers * Number(raffle.pricePerNumber)}
         quantity={raffle.totalNumbers}
       />
 

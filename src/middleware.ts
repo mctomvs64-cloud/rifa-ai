@@ -9,7 +9,7 @@ export const { auth: middleware } = NextAuth(authConfig);
  * Middleware de autenticação e autorização.
  * Protege rotas de admin e vendedor, redireciona usuários não autenticados.
  */
-export default middleware((req: NextRequest & { auth: { user?: { role?: string } } | null }) => {
+export default middleware((req: NextRequest & { auth: { user?: { role?: string, email?: string | null } } | null }) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
   const isLoggedIn = !!session?.user;
