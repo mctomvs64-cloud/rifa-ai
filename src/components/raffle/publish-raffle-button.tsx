@@ -10,7 +10,7 @@ export function PublishRaffleButton({ raffleId }: { raffleId: string }) {
   const { addToast } = useToast();
 
   const handlePublish = async () => {
-    // A API de generate-numbers já publica a rifa, 
+    // A API de generate-numbers já publica a 
     // mas se os números já foram gerados e ela ainda for DRAFT, precisamos publicar.
     // Vamos chamar o endpoint de patch para mudar o status.
     setIsPublishing(true);
@@ -23,11 +23,11 @@ export function PublishRaffleButton({ raffleId }: { raffleId: string }) {
       });
 
       if (!res.ok) {
-        addToast("Erro ao publicar a rifa.", "error");
+        addToast("Erro ao publicar a", "error");
         return;
       }
 
-      addToast("Rifa publicada com sucesso!", "success");
+      addToast("Vaquinha publicada com sucesso!", "success");
       router.refresh();
     } catch (error) {
       addToast("Erro de conexão.", "error");
@@ -42,7 +42,7 @@ export function PublishRaffleButton({ raffleId }: { raffleId: string }) {
       disabled={isPublishing}
       className="bg-primary text-primary-foreground font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
     >
-      {isPublishing ? "Publicando..." : "🚀 Publicar Rifa"}
+      {isPublishing ? "Publicando..." : "🚀 Publicar Vaquinha"}
     </button>
   );
 }

@@ -20,7 +20,7 @@ function getSupabaseAdmin() {
   return createClient(url, key);
 }
 
-const BUCKET = "rifas";
+const BUCKET = ;
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });

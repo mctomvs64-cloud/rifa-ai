@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { PromotionsManager } from "@/components/admin/promotions-manager";
 
-export const metadata = { title: "Promoções — Admin RifaAI" };
+export const metadata = { title: "Promoções — Admin Vaquinha Ai" };
 
 export default async function AdminPromotionsPage() {
   const session = await auth();

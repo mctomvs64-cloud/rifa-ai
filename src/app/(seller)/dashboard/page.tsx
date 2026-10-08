@@ -17,7 +17,7 @@ export default async function SellerDashboard() {
 
   const sellerId = session.user.id;
 
-  // Rifas do vendedor com contadores e receita
+  // Vaquinhas do vendedor com contadores e receita
   const raffles = await db.raffle.findMany({
     where: { sellerId },
     include: {
@@ -130,7 +130,7 @@ export default async function SellerDashboard() {
     },
   ].filter((d) => d.value > 0);
 
-  // ===== Ranking de rifas =====
+  // ===== Ranking de=====
   const ranking: RaffleRank[] = raffles
     .map((r) => ({
       title: r.title,
@@ -156,7 +156,7 @@ export default async function SellerDashboard() {
           href="/dashboard/rifas/nova"
           className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
         >
-          ✨ Nova Rifa
+          ✨ Nova Vaquinha
         </Link>
       </div>
 
@@ -214,8 +214,7 @@ export default async function SellerDashboard() {
             {leadOrders.length}
           </div>
           <div className="text-[11px] text-muted-foreground mt-1.5">
-            {formatCurrency(openValue)} para recuperar nos painéis das rifas
-          </div>
+            {formatCurrency(openValue)} para recuperar nos painéis das          </div>
         </div>
       </div>
 
@@ -241,7 +240,7 @@ export default async function SellerDashboard() {
           {recentOrders.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 py-8">
               <span className="text-3xl opacity-40">🔔</span>
-              Nenhum pedido ainda. Compartilhe suas rifas para começar!
+              Nenhum pedido ainda. Compartilhe suaspara começar!
             </div>
           ) : (
             <div className="space-y-2.5 flex-1">
@@ -283,7 +282,7 @@ export default async function SellerDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
           <div>
             <h3 className="font-semibold">📦 Ocupação Geral das Cotas</h3>
-            <p className="text-xs text-white/60 mt-0.5">Progresso consolidado de todas as rifas publicadas</p>
+            <p className="text-xs text-white/60 mt-0.5">Progresso consolidado de todas aspublicadas</p>
           </div>
           <div className="text-right">
             <span className="font-display text-3xl font-bold text-amber-400">{fillRate}%</span>
@@ -301,7 +300,7 @@ export default async function SellerDashboard() {
         <div className="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
           <div>
             <div className="font-display text-lg font-bold">{raffles.length}</div>
-            <div className="text-white/50">rifas criadas</div>
+            <div className="text-white/50"criadas</div>
           </div>
           <div>
             <div className="font-display text-lg font-bold text-emerald-400">{activeRaffles}</div>
@@ -314,19 +313,19 @@ export default async function SellerDashboard() {
         </div>
       </div>
 
-      {/* Lista de Rifas */}
+      {/* Lista de Vaquinhas */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-xl font-bold">Minhas Rifas</h2>
+          <h2 className="font-display text-xl font-bold">Minhas Vaquinhas</h2>
           <span className="text-xs text-muted-foreground">{raffles.length} no total</span>
         </div>
 
         {raffles.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl bg-muted/10">
             <span className="text-5xl mb-4 block opacity-40">🎫</span>
-            <p className="text-muted-foreground mb-4">Você ainda não criou nenhuma rifa.</p>
+            <p className="text-muted-foreground mb-4">Você ainda não criou nenhuma</p>
             <Link href="/dashboard/rifas/nova" className="text-primary hover:underline font-semibold">
-              Comece criando sua primeira rifa →
+              Comece criando sua primeira→
             </Link>
           </div>
         ) : (
@@ -334,7 +333,7 @@ export default async function SellerDashboard() {
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-wide">
                 <tr>
-                  <th className="px-6 py-3.5 font-semibold">Rifa</th>
+                  <th className="px-6 py-3.5 font-semibold">Vaquinha</th>
                   <th className="px-6 py-3.5 font-semibold">Status</th>
                   <th className="px-6 py-3.5 font-semibold hidden md:table-cell">Progresso</th>
                   <th className="px-6 py-3.5 font-semibold">Arrecadado</th>

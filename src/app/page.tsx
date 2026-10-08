@@ -11,7 +11,7 @@ export const metadata = {
     "Apoie causas que você acredita! A cada doação via PIX você ganha números para o sorteio de prêmios. Transparente e seguro.",
 };
 
-// Dados de rifas mudam em tempo real — renderiza no servidor a cada acesso
+// Dados demudam em tempo real — renderiza no servidor a cada acesso
 export const dynamic = "force-dynamic";
 
 async function getActiveCampaigns() {

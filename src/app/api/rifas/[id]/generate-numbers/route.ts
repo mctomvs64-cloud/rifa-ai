@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 
 /**
  * POST /api/rifas/[id]/generate-numbers
- * Gera os números no banco de dados para uma rifa em rascunho.
+ * Gera os números no banco de dados para umaem rascunho.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
 
     if (!raffle) {
-      return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
+      return NextResponse.json({ error: "Vaquinha não encontrada" }, { status: 404 });
     }
 
     if (raffle.sellerId !== session.user.id && session.user.role !== "ADMIN") {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     if (raffle.status !== "DRAFT") {
-      return NextResponse.json({ error: "Rifa já publicada" }, { status: 400 });
+      return NextResponse.json({ error: "Vaquinha já publicada" }, { status: 400 });
     }
 
     if (raffle._count.numbers > 0) {
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       });
     }
 
-    // Atualiza status da rifa para ACTIVE (pronta para vender)
+    // Atualiza status dapara ACTIVE (pronta para vender)
     await db.raffle.update({
       where: { id },
       data: { status: "ACTIVE" },

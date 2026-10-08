@@ -24,8 +24,8 @@ export default async function MonitoramentoRifasPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="font-display text-3xl font-bold">Monitoramento de Rifas</h1>
-          <p className="text-muted-foreground">Visão geral ("God Mode") de todas as rifas ativas, pendentes ou encerradas.</p>
+          <h1 className="font-display text-3xl font-bold">Monitoramento de Vaquinhas</h1>
+          <p className="text-muted-foreground">Visão geral ("God Mode") de todas asativas, pendentes ou encerradas.</p>
         </div>
         <RedeployButton />
       </div>
@@ -34,7 +34,7 @@ export default async function MonitoramentoRifasPage() {
         <table className="w-full text-sm text-left">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
-              <th className="px-6 py-4 font-medium">Rifa</th>
+              <th className="px-6 py-4 font-medium">Vaquinha</th>
               <th className="px-6 py-4 font-medium">Vendedor</th>
               <th className="px-6 py-4 font-medium">Preço (Cota)</th>
               <th className="px-6 py-4 font-medium">Vendas (Pagas)</th>
@@ -115,7 +115,7 @@ export default async function MonitoramentoRifasPage() {
             {raffles.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                  Nenhuma rifa encontrada na plataforma.
+                  Nenhumaencontrada na plataforma.
                 </td>
               </tr>
             )}

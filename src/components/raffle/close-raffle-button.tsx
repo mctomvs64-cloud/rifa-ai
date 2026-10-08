@@ -9,7 +9,7 @@ export function CloseRaffleButton({ raffleId, raffleTitle }: { raffleId: string;
 
   const handleClose = async () => {
     const confirm = window.confirm(
-      `Encerrar as vendas da rifa "${raffleTitle}"?\n\nOs números deixarão de estar disponíveis para compra e essa ação não poderá ser desfeita por aqui (é possível reabrir editando a rifa).`
+      `Encerrar as vendas da"${raffleTitle}"?\n\nOs números deixarão de estar disponíveis para compra e essa ação não poderá ser desfeita por aqui (é possível reabrir editando a.`
     );
     if (!confirm) return;
 
@@ -23,7 +23,7 @@ export function CloseRaffleButton({ raffleId, raffleTitle }: { raffleId: string;
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        alert(data?.error || "Erro ao encerrar a rifa. Tente novamente.");
+        alert(data?.error || "Erro ao encerrar a Tente novamente.");
         return;
       }
 

@@ -90,8 +90,8 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
     const numbersText = record.numbers.join(", ");
     const message =
       record.status === "PENDING"
-        ? `Olá ${record.buyerName}! Tudo bem? 👋\n\nVimos que você reservou ${record.quantity} número(s) na rifa "${raffleTitle}" — prêmio: ${rafflePrize} 🎁\n\n📋 Seus números: ${numbersText}\n💰 Valor: ${formatCurrency(record.totalAmount)}\n\nO pagamento não foi concluído e a reserva expira em breve. Quer finalizar e garantir sua participação no sorteio?`
-        : `Olá ${record.buyerName}! Tudo bem? 👋\n\nVocê tinha escolhido ${record.quantity} número(s) na rifa "${raffleTitle}" — prêmio: ${rafflePrize} 🎁\n\n⏰ Sua reserva expirou e os números voltaram para o site, mas ainda dá tempo participar!\n\nGaranta os seus de novo aqui: ${raffleUrl}\n\nBoa sorte! 🍀`;
+        ? `Olá ${record.buyerName}! Tudo bem? 👋\n\nVimos que você reservou ${record.quantity} número(s) na"${raffleTitle}" — prêmio: ${rafflePrize} 🎁\n\n📋 Seus números: ${numbersText}\n💰 Valor: ${formatCurrency(record.totalAmount)}\n\nO pagamento não foi concluído e a reserva expira em breve. Quer finalizar e garantir sua participação no sorteio?`
+        : `Olá ${record.buyerName}! Tudo bem? 👋\n\nVocê tinha escolhido ${record.quantity} número(s) na"${raffleTitle}" — prêmio: ${rafflePrize} 🎁\n\n⏰ Sua reserva expirou e os números voltaram para o site, mas ainda dá tempo participar!\n\nGaranta os seus de novo aqui: ${raffleUrl}\n\nBoa sorte! 🍀`;
     return `https://wa.me/${whatsappNumber(record.buyerPhone)}?text=${encodeURIComponent(message)}`;
   };
 
@@ -187,7 +187,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
           <ImageUploadForm raffleId={raffle.id} currentImage={raffle.coverImage} />
         </div>
 
-        {/* Informações da Rifa */}
+        {/* Informações da Vaquinha */}
         <div className="space-y-4">
           <h2 className="font-semibold text-lg border-b pb-2">Detalhes</h2>
           

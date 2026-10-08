@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     // Determina se é preference da raffa (sem pedido) ou de um pedido específico
     const isRaffleId = !orderId || (orderId && orderId.startsWith("raf_"));
 
-    // Preference da rifa inteira (painel) exige sessão de vendedor/admin.
+    // Preference dainteira (painel) exige sessão de vendedor/admin.
     // Pedido específico é fluxo público do comprador (sem login).
     if (isRaffleId) {
       const session = await auth();
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     });
 
     if (!raffle) {
-      return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
+      return NextResponse.json({ error: "Vaquinha não encontrada" }, { status: 404 });
     }
 
     // Dados do comprador - usamos dados da raffa quando é preference da raffa
@@ -83,18 +83,18 @@ export async function POST(req: Request) {
       // Itens do carrinho (pedido específico vai como 1 item com o valor total)
       items: [
         {
-          title: `Rifa: ${raffle.title}`,
+          title: `Vaquinha: ${raffle.title}`,
           quantity: 1,
           unit_price: isRaffleId
             ? Number(raffle.pricePerNumber) * raffle.totalNumbers
             : Number(order?.totalAmount),
-          description: `${isRaffleId ? raffle.totalNumbers : order?.quantity || 1} número(s) da rifa - Prêmio: ${raffle.prize}`,
+          description: `${isRaffleId ? raffle.totalNumbers : order?.quantity || 1} número(s) da- Prêmio: ${raffle.prize}`,
         },
       ],
 
       // Dados do comprador (campo correto é "payer")
       payer: {
-        name: isRaffleId ? "Comprador da Rifa" : (order?.buyerName || "Comprador"),
+        name: isRaffleId ? "Comprador da Vaquinha" : (order?.buyerName || "Comprador"),
         email: isRaffleId ? "comprador@rifaai.com.br" : (order?.buyerEmail || "comprador@rifaai.com.br"),
         ...(isRaffleId ? {} : { phone: { area_code: areaCode, number: phoneNumber } }),
       },

@@ -25,7 +25,7 @@ const promotionSchema = z
 /**
  * GET /api/promotions?raffleId=xxx&all=1
  * - Público: lista promoções ativas e dentro da vigência.
- *   Com `raffleId`, retorna as globais (raffleId null) + as da rifa.
+ *   Com `raffleId`, retorna as globais (raffleId null) + as da
  * - Admin (com ?all=1): lista todas, incluindo inativas.
  */
 export async function GET(req: NextRequest) {
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     if (raffleId) {
       const raffleExists = await db.raffle.findUnique({ where: { id: raffleId } });
       if (!raffleExists) {
-        return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
+        return NextResponse.json({ error: "Vaquinha não encontrada" }, { status: 404 });
       }
     }
 

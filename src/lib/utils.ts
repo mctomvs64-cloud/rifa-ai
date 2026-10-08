@@ -85,7 +85,7 @@ export function formatDateTime(date: Date | string): string {
   }).format(new Date(date));
 }
 
-/** Calcula o progresso de venda de uma rifa (%) */
+/** Calcula o progresso de venda de uma(%) */
 export function calcRaffleProgress(sold: number, total: number): number {
   if (total === 0) return 0;
   return Math.round((sold / total) * 100);

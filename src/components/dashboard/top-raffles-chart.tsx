@@ -26,11 +26,11 @@ export function TopRafflesChart({ data }: { data: RaffleRank[] }) {
   if (data.length === 0) {
     return (
       <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm h-full flex flex-col">
-        <h3 className="font-semibold mb-1">🏆 Rifas por Receita</h3>
+        <h3 className="font-semibold mb-1">🏆 Vaquinhas por Receita</h3>
         <p className="text-xs text-muted-foreground mb-4">Ranking de arrecadação</p>
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 py-8">
           <span className="text-3xl opacity-40">🏆</span>
-          Crie rifas para ver o ranking aqui.
+          Criepara ver o ranking aqui.
         </div>
       </div>
     );
@@ -40,7 +40,7 @@ export function TopRafflesChart({ data }: { data: RaffleRank[] }) {
 
   return (
     <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm h-full flex flex-col">
-      <h3 className="font-semibold mb-1">🏆 Rifas por Receita</h3>
+      <h3 className="font-semibold mb-1">🏆 Vaquinhas por Receita</h3>
       <p className="text-xs text-muted-foreground mb-4">Ranking de arrecadação confirmada</p>
 
       <div className="flex-1 min-h-[180px] -ml-4" style={{ height: Math.max(180, data.length * 52) }}>

@@ -7,7 +7,7 @@ import { db } from "./db";
  * Se um pedido está em status 'PENDING' e seu expiresAt já passou (ou expiresAt dos números),
  * os números vinculados voltam para status 'AVAILABLE' e o pedido é marcado como 'EXPIRED'.
  *
- * @param raffleId Opcional. Se passado, limpa apenas a rifa especificada.
+ * @param raffleId Opcional. Se passado, limpa apenas aespecificada.
  */
 export async function releaseExpiredReservations(raffleId?: string) {
   try {

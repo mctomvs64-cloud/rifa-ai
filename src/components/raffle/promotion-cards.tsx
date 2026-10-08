@@ -19,7 +19,7 @@ interface PromotionCardsProps {
 }
 
 /**
- * Cards de pacotes promocionais exibidos na página da rifa.
+ * Cards de pacotes promocionais exibidos na página da
  * Mostra quantidade, preço promocional e economia calculada automaticamente.
  */
 export function PromotionCards({

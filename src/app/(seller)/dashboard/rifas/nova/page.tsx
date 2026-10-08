@@ -69,14 +69,14 @@ export default function CreateRafflePage() {
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.error || "Erro ao criar rifa");
+        alert(error.error || "Erro ao criar);
         return;
       }
 
       const { raffle } = await response.json();
       router.push(`/dashboard/rifas/${raffle.id}`);
     } catch (error) {
-      alert("Erro de conexão ao criar a rifa.");
+      alert("Erro de conexão ao criar a");
     } finally {
       setIsSubmitting(false);
     }
@@ -96,15 +96,15 @@ export default function CreateRafflePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="font-display text-3xl font-bold mb-2">Criar Nova Rifa</h1>
+      <h1 className="font-display text-3xl font-bold mb-2">Criar Nova Vaquinha</h1>
       <p className="text-muted-foreground mb-8">
-        Preencha os dados abaixo para configurar sua nova rifa. Ela será salva como rascunho e você poderá adicionar fotos antes de publicar.
+        Preencha os dados abaixo para configurar sua nova Ela será salva como rascunho e você poderá adicionar fotos antes de publicar.
       </p>
 
       <form onSubmit={handleSubmit} className="bg-card border rounded-xl p-6 md:p-8 shadow-sm space-y-6">
         {/* Imagens */}
         <div className="space-y-4 pt-4">
-          <h2 className="font-semibold text-lg border-b pb-2">Imagens da Rifa</h2>
+          <h2 className="font-semibold text-lg border-b pb-2">Imagens da Vaquinha</h2>
 
           <ImageUpload
             label="Imagem de Capa (Principal)"
@@ -121,7 +121,7 @@ export default function CreateRafflePage() {
           />
 
           <p className="text-xs text-muted-foreground">
-            A imagem de capa será usada nas listagens e no checkout. A galeria aparece na página da rifa.
+            A imagem de capa será usada nas listagens e no checkout. A galeria aparece na página da
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default function CreateRafflePage() {
           <h2 className="font-semibold text-lg border-b pb-2">Informações Básicas</h2>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Título da Rifa *</label>
+            <label className="block text-sm font-medium mb-1">Título da Vaquinha *</label>
             <input
               required
               name="title"
@@ -148,7 +148,7 @@ export default function CreateRafflePage() {
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              placeholder="Descreva a rifa, regras, condições de entrega, etc."
+              placeholder="Descreva a regras, condições de entrega, etc."
               className="w-full px-4 py-2 bg-background border rounded-lg focus:ring-2 focus:ring-primary/50 outline-none transition-all resize-none"
             />
           </div>

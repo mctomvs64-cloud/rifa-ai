@@ -5,8 +5,7 @@
 
 interface GenerateWhatsAppLinkParams {
   phone: string;       // Número do destinatário (55119...): vendedor
-  raffleName: string;  // Nome da rifa
-  numbers: number[];   // Números comprados
+  raffleName: string;  // Nome da  numbers: number[];   // Números comprados
   buyerName: string;   // Nome do comprador
   orderId: string;     // ID do pedido para referência
 }
@@ -29,7 +28,7 @@ export function generateBuyerToSellerLink(
   const message = [
     `🎫 *Confirmação de Compra — ${raffleName}*`,
     ``,
-    `Olá! Acabei de pagar minha cota na rifa! ✅`,
+    `Olá! Acabei de pagar minha cota na ✅`,
     ``,
     `👤 *Nome:* ${buyerName}`,
     `🎯 *Números:* ${formattedNumbers}`,
@@ -47,8 +46,8 @@ export function generateBuyerToSellerLink(
 }
 
 /**
- * Gera um link de compartilhamento da rifa para WhatsApp.
- * Para o vendedor divulgar a rifa.
+ * Gera um link de compartilhamento dapara WhatsApp.
+ * Para o vendedor divulgar a
  */
 export function generateShareRaffleLink(params: {
   raffleUrl: string;

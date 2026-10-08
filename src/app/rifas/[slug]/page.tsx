@@ -11,7 +11,7 @@ interface RafflePageProps {
 }
 
 async function getRaffle(slug: string) {
-  // Encontra a rifa preliminarmente para obter o ID e liberar reservas
+  // Encontra apreliminarmente para obter o ID e liberar reservas
   const initial = await db.raffle.findUnique({
     where: { slug },
     select: { id: true },

@@ -90,7 +90,7 @@ function SellerCard({ seller }: SellerCardProps) {
               {seller.status}
             </span>
             <span className="text-sm text-muted-foreground">
-              {totalRaffles} rifa{totalRaffles !== 1 ? "s" : ""} ({activeRaffles} ativas)
+              {totalRaffles}totalRaffles !== 1 ? "s" : ""} ({activeRaffles} ativas)
             </span>
             <span className="text-sm text-muted-foreground">
               {seller._count.orders} pedidos
@@ -106,7 +106,7 @@ function SellerCard({ seller }: SellerCardProps) {
 
         {seller.raffles.length > 0 && (
           <div className="mt-4 pt-4 border-t">
-            <h4 className="text-sm font-medium text-muted-foreground mb-3">Rifas Recentes</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">Vaquinhas Recentes</h4>
             <div className="flex flex-wrap gap-2">
               {seller.raffles.slice(0, 3).map((raffle) => (
                 <Link

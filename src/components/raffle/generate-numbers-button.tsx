@@ -8,7 +8,7 @@ export function GenerateNumbersButton({ raffleId, totalNumbers }: { raffleId: st
   const router = useRouter();
 
   const handleGenerate = async () => {
-    const confirm = window.confirm(`Deseja gerar ${totalNumbers} números agora? Após isso a rifa será publicada e não poderá ter sua quantidade alterada.`);
+    const confirm = window.confirm(`Deseja gerar ${totalNumbers} números agora? Após isso aserá publicada e não poderá ter sua quantidade alterada.`);
     if (!confirm) return;
 
     setIsGenerating(true);
@@ -24,7 +24,7 @@ export function GenerateNumbersButton({ raffleId, totalNumbers }: { raffleId: st
         return;
       }
 
-      alert("Rifa publicada com sucesso! Compartilhe o link.");
+      alert("Vaquinha publicada com sucesso! Compartilhe o link.");
       router.refresh(); // Atualiza a página para refletir o status ACTIVE
     } catch (error) {
       alert("Erro de conexão ao gerar números.");

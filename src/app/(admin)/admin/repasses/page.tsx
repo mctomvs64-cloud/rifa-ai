@@ -58,7 +58,7 @@ export default async function RepassesPage() {
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               <th className="px-6 py-4 font-medium">Data</th>
-              <th className="px-6 py-4 font-medium">Rifa / Vendedor</th>
+              <th className="px-6 py-4 font-medium">Vaquinha / Vendedor</th>
               <th className="px-6 py-4 font-medium">Valor Total</th>
               <th className="px-6 py-4 font-medium">Plataforma (Taxa)</th>
               <th className="px-6 py-4 font-medium">Vendedor (Líquido)</th>

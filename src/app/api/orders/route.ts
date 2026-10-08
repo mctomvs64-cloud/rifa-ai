@@ -48,14 +48,14 @@ export async function POST(req: NextRequest) {
     // Libera reservas expiradas antes de validar disponibilidade
     await releaseExpiredReservations(raffleId);
 
-    // Busca a rifa
+    // Busca a
     const raffle = await db.raffle.findUnique({
       where: { id: raffleId, status: "ACTIVE" },
       include: { owner: true },
     });
 
     if (!raffle) {
-      return NextResponse.json({ error: "Rifa não encontrada ou inativa" }, { status: 404 });
+      return NextResponse.json({ error: "Vaquinha não encontrada ou inativa" }, { status: 404 });
     }
 
     // Valida a promoção (se o pedido veio de um pacote)
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         );
       }
     } else if (numbers.length < raffle.minNumbers || numbers.length > raffle.maxNumbers) {
-      // Compra avulsa — respeita limites da rifa
+      // Compra avulsa — respeita limites da
       return NextResponse.json(
         {
           error: `Selecione entre ${raffle.minNumbers} e ${raffle.maxNumbers} números`,

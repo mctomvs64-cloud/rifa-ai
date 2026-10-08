@@ -218,7 +218,7 @@ export function CheckoutModal({
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-amber-950/30">
               <span className="text-6xl mb-2">🎟️</span>
-              <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Rifa Oficial</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Vaquinha Oficial</span>
             </div>
           )}
 
@@ -242,7 +242,7 @@ export function CheckoutModal({
             </button>
           )}
 
-          {/* Título da Rifa sobre a capa */}
+          {/* Título da Vaquinha sobre a capa */}
           <div className="absolute bottom-0 left-0 right-0 px-5 pb-4">
             <h2 className="text-xl sm:text-2xl font-display font-black text-white drop-shadow-lg line-clamp-2">
               {raffleTitle}

@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     });
 
     if (!raffle) {
-      return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
+      return NextResponse.json({ error: "Vaquinha não encontrada" }, { status: 404 });
     }
 
     if (raffle.sellerId !== session.user.id && session.user.role !== "ADMIN") {
@@ -127,7 +127,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ raffle: updated });
   } catch (error) {
     console.error("[Raffle Update] Erro:", error);
-    return NextResponse.json({ error: "Erro ao atualizar rifa" }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao atualizar }, { status: 500 });
   }
 }
 
@@ -152,7 +152,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     });
 
     if (!raffle) {
-      return NextResponse.json({ error: "Rifa não encontrada" }, { status: 404 });
+      return NextResponse.json({ error: "Vaquinha não encontrada" }, { status: 404 });
     }
 
     if (raffle.sellerId !== session.user.id && session.user.role !== "ADMIN") {
@@ -165,7 +165,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         where: { id },
         data: { status: "CANCELLED" },
       });
-      return NextResponse.json({ message: "Rifa cancelada com sucesso (possui pedidos pagos registrados)." });
+      return NextResponse.json({ message: "Vaquinha cancelada com sucesso (possui pedidos pagos registrados)." });
     }
 
     // Deleta em cascata (orders, numbers, promotions)
@@ -176,9 +176,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       db.raffle.delete({ where: { id } }),
     ]);
 
-    return NextResponse.json({ message: "Rifa excluída com sucesso!" });
+    return NextResponse.json({ message: "Vaquinha excluída com sucesso!" });
   } catch (error) {
     console.error("[Raffle Delete] Erro:", error);
-    return NextResponse.json({ error: "Erro ao excluir rifa" }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao excluir }, { status: 500 });
   }
 }

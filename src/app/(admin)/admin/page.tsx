@@ -34,7 +34,7 @@ export default async function AdminDashboard() {
   const totalVolume = orders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
   const platformRevenue = orders.reduce((sum, order) => sum + Number(order.platformFee), 0);
 
-  // Últimas Rifas Criadas
+  // Últimas Vaquinhas Criadas
   const recentRaffles = await db.raffle.findMany({
     take: 5,
     orderBy: { createdAt: "desc" },
@@ -114,7 +114,7 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Rifas Recentes */}
+        {/* Vaquinhas Recentes */}
         <div className="lg:col-span-2">
           <h2 className="font-display text-xl font-bold mb-4">Vaquinhas Criadas Recentemente</h2>
           <div className="bg-card border rounded-xl overflow-hidden shadow-sm">

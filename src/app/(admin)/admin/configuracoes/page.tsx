@@ -139,7 +139,7 @@ export default function AdminConfiguracoesPage() {
             </label>
           </div>
           <p className="text-xs text-muted-foreground ml-9">
-            Se desativado, qualquer vendedor pode criar e publicar rifas imediatamente após o cadastro. Se ativado, o vendedor precisa ser aprovado no painel.
+            Se desativado, qualquer vendedor pode criar e publicarimediatamente após o cadastro. Se ativado, o vendedor precisa ser aprovado no painel.
           </p>
         </div>
 

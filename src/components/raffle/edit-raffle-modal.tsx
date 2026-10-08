@@ -213,7 +213,7 @@ export function EditRaffleModal({ raffle }: EditRaffleModalProps) {
                   className="w-full px-3.5 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
-                  ⚠️ Se a rifa estiver ativa e tiver vendas, cotas excedentes/faltantes serão ajustadas.
+                  ⚠️ Se aestiver ativa e tiver vendas, cotas excedentes/faltantes serão ajustadas.
                 </p>
               </div>
 

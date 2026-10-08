@@ -95,7 +95,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
           COLUNA ESQUERDA (4 cols desktop) — Informações & Cart
       ══════════════════════════════════════════════════════ */}
       <div className="lg:col-span-4 space-y-6">
-        {/* Card Principal da Rifa */}
+        {/* Card Principal da Vaquinha */}
         <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           {/* Imagem / Cover */}
           <div className="relative w-full aspect-square bg-slate-900 overflow-hidden group flex items-center justify-center">
@@ -110,7 +110,7 @@ export function RafflePageClient({ raffle, numbers, stats, promotions }: RaffleP
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950/40 text-amber-400">
                 <span className="text-7xl mb-2">🎟️</span>
-                <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Rifa Oficial</span>
+                <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Vaquinha Oficial</span>
               </div>
             )}
 

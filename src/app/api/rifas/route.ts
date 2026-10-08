@@ -27,7 +27,7 @@ const createRaffleSchema = z.object({
 
 /**
  * GET /api/rifas
- * Lista rifas do vendedor autenticado.
+ * Listado vendedor autenticado.
  */
 export async function GET(req: NextRequest) {
   const rateLimitRes = await apiRateLimiter(req);
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/rifas
- * Cria uma nova rifa para o vendedor autenticado.
+ * Cria uma novapara o vendedor autenticado.
  */
 export async function POST(req: NextRequest) {
   const rateLimitRes = await apiRateLimiter(req);
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
     return applySecurityHeaders(
       NextResponse.json(
-        { error: "Apenas vendedores podem criar rifas" },
+        { error: "Apenas vendedores podem criar },
         { status: 403 }
       )
     );
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     // Gera slug único baseado no título
     const slug = generateUniqueSlug(data.title);
 
-    // Cria a rifa em DRAFT (não publicada ainda)
+    // Cria aem DRAFT (não publicada ainda)
     const raffle = await db.raffle.create({
       data: {
         slug,
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 
     return applySecurityHeaders(NextResponse.json({ raffle }, { status: 201 }));
   } catch (error) {
-    console.error("[Rifas POST] Erro:", error);
-    return applySecurityHeaders(NextResponse.json({ error: "Erro ao criar rifa" }, { status: 500 }));
+    console.error("[Vaquinhas POST] Erro:", error);
+    return applySecurityHeaders(NextResponse.json({ error: "Erro ao criar }, { status: 500 }));
   }
 }

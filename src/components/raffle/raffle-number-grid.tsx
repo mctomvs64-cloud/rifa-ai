@@ -26,7 +26,7 @@ const STATUS_TITLES: Record<NumberStatus, string> = {
 };
 
 /**
- * Grid interativo e de alto padrão para seleção de cotas/números da rifa.
+ * Grid interativo e de alto padrão para seleção de cotas/números da
  */
 export function RaffleNumberGrid({
   numbers,

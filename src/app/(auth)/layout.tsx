@@ -15,10 +15,10 @@ export default function AuthLayout({
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="text-center mb-8">
             <h2 className="font-display text-3xl font-bold tracking-tight">
-              Bem-vindo à RifaAI
+              Bem-vindo à Vaquinha Ai
             </h2>
             <p className="text-sm text-muted-foreground mt-2">
-              A plataforma mais segura para suas rifas online
+              A plataforma mais segura para suasonline
             </p>
           </div>
           

@@ -145,7 +145,7 @@ export default function CheckoutSuccessClient({
           <div className="bg-muted/40 rounded-2xl p-6 text-left space-y-4 mb-8 border border-border/50">
             <div>
               <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
-                Rifa
+                Vaquinha
               </div>
               <div className="font-semibold">{order.raffle.title}</div>
             </div>
@@ -216,7 +216,7 @@ export default function CheckoutSuccessClient({
               href={`/rifas/${order.raffle.slug}`}
               className="w-full block py-3.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all text-sm"
             >
-              ← Voltar para a Rifa
+              ← Voltar para a Vaquinha
             </Link>
           </div>
         </div>
