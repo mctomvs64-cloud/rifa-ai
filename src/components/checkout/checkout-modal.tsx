@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import QRCode from "react-qr-code";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -143,6 +144,15 @@ export function CheckoutModal({
 
       if (data.expiresAt) setExpiresAt(new Date(data.expiresAt as string));
 
+      if (method === "card") {
+        const wppBase = data.whatsappLink as string;
+        if (wppBase) {
+          const wppCartao = wppBase.replace("Segue o comprovante!", "Quero pagar com cartão ou outros métodos!");
+          window.location.href = wppCartao;
+          return;
+        }
+      }
+
       if (data.pix) {
         const pix = data.pix as Record<string, string>;
         setPixData({
@@ -161,9 +171,12 @@ export function CheckoutModal({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await processOrder("pix");
+  const handleCheckoutType = async (type: "pix" | "card") => {
+    if (!formData.name || !formData.phone) {
+      setErrorMsg("Preencha seu nome e WhatsApp");
+      return;
+    }
+    await processOrder(type as any);
   };
 
 
@@ -298,7 +311,7 @@ export function CheckoutModal({
               </div>
 
               {/* Formulário */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "#888" }}>
                     Nome Completo <span style={{ color: "#ef4444" }}>*</span>
@@ -348,25 +361,43 @@ export function CheckoutModal({
 
                 <div className="pt-2 space-y-2.5">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={() => handleCheckoutType("pix")}
                     disabled={isProcessing}
                     className="w-full py-4 rounded-2xl font-display font-black text-base text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
-                    style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", boxShadow: "0 8px 24px rgba(245,158,11,0.3)" }}
+                    style={{ background: "linear-gradient(135deg, #059669, #047857)", boxShadow: "0 8px 24px rgba(5,150,105,0.3)" }}
                   >
                     {isProcessing && payMethod === "pix" ? (
                       <>
                         <span className="animate-spin text-lg">⏳</span>
-                        <span>Gerando QR Code PIX...</span>
+                        <span>Gerando PIX...</span>
                       </>
                     ) : (
                       <>
-                        <span>Pagar Agora — {formatCurrency(totalAmount)}</span>
+                        <span>Pagar com PIX — {formatCurrency(totalAmount)}</span>
                         <span>⚡</span>
                       </>
                     )}
                   </button>
 
-
+                  <button
+                    type="button"
+                    onClick={() => handleCheckoutType("card")}
+                    disabled={isProcessing}
+                    className="w-full py-4 rounded-2xl font-display font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+                    style={{ background: "#1f2d3a", border: "1.5px solid #009ee3", color: "#009ee3" }}
+                  >
+                    {isProcessing && payMethod === "card" ? (
+                      <>
+                        <span className="animate-spin text-lg">⏳</span>
+                        <span>Processando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>💳 Cartão ou Outros Métodos</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 {/* Erro inline — sem popup */}
@@ -418,11 +449,12 @@ export function CheckoutModal({
                   </div>
                 )}
                 <div className={coverImage ? "pt-8" : ""}>
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixData.copyPaste)}`}
-                    alt="QR Code PIX"
-                    className="w-56 h-56 object-contain"
-                  />
+                  <div className="p-2 bg-white rounded-xl shadow-inner flex items-center justify-center">
+                    <QRCode
+                      value={pixData.copyPaste}
+                      size={224}
+                    />
+                  </div>
                   <p className="text-[11px] text-center mt-2 font-medium" style={{ color: "#666" }}>
                     Abra o app do seu banco e escaneie o código
                   </p>
