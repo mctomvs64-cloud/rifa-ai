@@ -19,7 +19,7 @@ interface CheckoutModalProps {
 
 type Step = "form" | "pix" | "confirmed";
 
-type PayMethod = "pix" | "pro";
+type PayMethod = "pix" | "card";
 
 interface PixData {
   qrCodeBase64: string;

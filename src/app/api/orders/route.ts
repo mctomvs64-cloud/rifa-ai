@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     // Busca a
     const raffle = await db.raffle.findUnique({
       where: { id: raffleId, status: "ACTIVE" },
-      include: { owner: true },
+      include: { seller: true },
     });
 
     if (!raffle) {
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
 
       const orderId = `ord_${Math.random().toString(36).substring(2, 11)}`;
       const text = `Olá, acabei de fazer uma doação na vaquinha *${raffle.title}*. Meu pedido é *${orderId}*. Segue o comprovante!`;
-      const wpp = `https://wa.me/55${raffle.owner.phone}?text=${encodeURIComponent(text)}`;
+      const wpp = `https://wa.me/55${raffle.seller.phone}?text=${encodeURIComponent(text)}`;
 
       // Cria o pedido
       const order = await tx.order.create({

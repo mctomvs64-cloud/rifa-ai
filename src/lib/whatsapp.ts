@@ -8,6 +8,7 @@ interface GenerateWhatsAppLinkParams {
   raffleName: string;  // Nome da  numbers: number[];   // Números comprados
   buyerName: string;   // Nome do comprador
   orderId: string;     // ID do pedido para referência
+  numbers: number[];   // Cotas
 }
 
 /**
@@ -21,8 +22,8 @@ export function generateBuyerToSellerLink(
 
   // Formata os números bonito: 001, 002, 045...
   const formattedNumbers = numbers
-    .sort((a, b) => a - b)
-    .map((n) => String(n).padStart(3, "0"))
+    .sort((a: number, b: number) => a - b)
+    .map((n: number) => String(n).padStart(3, "0"))
     .join(", ");
 
   const message = [

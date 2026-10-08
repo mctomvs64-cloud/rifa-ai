@@ -24,7 +24,7 @@ export async function POST(
   }
 
   // Verifica permissão (apenas Admin ou o Dono da Vaquinha)
-  if (session.user.role !== "ADMIN" && order.raffle.ownerId !== session.user.id) {
+  if (session.user.role !== "ADMIN" && order.raffle.sellerId !== session.user.id) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
