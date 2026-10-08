@@ -107,7 +107,7 @@ export function ImageUploadForm({ raffleId, currentImage }: { raffleId: string; 
       <div className="relative h-48 rounded-xl overflow-hidden bg-muted">
         {imageUrl ? (
           <>
-            <Image src={imageUrl} alt="Capa da fill className="object-cover" />
+            <Image src={imageUrl} alt="Capa da vaquinha" fill className="object-cover" />
             {(isUpdating || isUploading) && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
                 <span className="animate-spin text-2xl">⏳</span>

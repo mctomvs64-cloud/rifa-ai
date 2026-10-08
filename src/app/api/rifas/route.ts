@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
     return applySecurityHeaders(
       NextResponse.json(
-        { error: "Apenas vendedores podem criar },
+        { error: "Apenas vendedores podem criar vaquinha" },
         { status: 403 }
       )
     );
@@ -137,6 +137,6 @@ export async function POST(req: NextRequest) {
     return applySecurityHeaders(NextResponse.json({ raffle }, { status: 201 }));
   } catch (error) {
     console.error("[Vaquinhas POST] Erro:", error);
-    return applySecurityHeaders(NextResponse.json({ error: "Erro ao criar }, { status: 500 }));
+    return applySecurityHeaders(NextResponse.json({ error: "Erro ao criar vaquinha" }, { status: 500 }));
   }
 }

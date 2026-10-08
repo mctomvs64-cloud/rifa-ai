@@ -127,7 +127,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ raffle: updated });
   } catch (error) {
     console.error("[Raffle Update] Erro:", error);
-    return NextResponse.json({ error: "Erro ao atualizar }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao atualizar vaquinha" }, { status: 500 });
   }
 }
 
@@ -179,6 +179,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ message: "Vaquinha excluída com sucesso!" });
   } catch (error) {
     console.error("[Raffle Delete] Erro:", error);
-    return NextResponse.json({ error: "Erro ao excluir }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao excluir vaquinha" }, { status: 500 });
   }
 }

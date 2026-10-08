@@ -228,7 +228,7 @@ export function PromotionsManager({ initialPromotions, raffles }: PromotionsMana
                 onChange={(e) => setForm({ ...form, raffleId: e.target.value })}
                 className="w-full px-4 py-2.5 bg-background border rounded-lg outline-none"
               >
-                <option value="">Todas as/option>
+                <option value="">Todas as vaquinhas</option>
                 {raffles.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.title}
@@ -375,7 +375,7 @@ export function PromotionsManager({ initialPromotions, raffles }: PromotionsMana
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {promo.raffleTitle ? `Vaquinha: ${promo.raffleTitle}` : "Todas as}
+                  {promo.raffleTitle ? `Vaquinha: ${promo.raffleTitle}` : "Todas as vaquinhas"}
                   {" · "}
                   Usos: {promo.usageCount}
                   {promo.endsAt &&

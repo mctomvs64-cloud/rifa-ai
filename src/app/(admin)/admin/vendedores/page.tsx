@@ -90,7 +90,7 @@ function SellerCard({ seller }: SellerCardProps) {
               {seller.status}
             </span>
             <span className="text-sm text-muted-foreground">
-              {totalRaffles}totalRaffles !== 1 ? "s" : ""} ({activeRaffles} ativas)
+              {totalRaffles} {totalRaffles !== 1 ? "vaquinhas" : "vaquinha"} ({activeRaffles} ativas)
             </span>
             <span className="text-sm text-muted-foreground">
               {seller._count.orders} pedidos

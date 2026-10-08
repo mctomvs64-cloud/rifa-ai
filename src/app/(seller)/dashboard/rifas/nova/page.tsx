@@ -69,7 +69,7 @@ export default function CreateRafflePage() {
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.error || "Erro ao criar);
+        alert(error.error || "Erro ao criar vaquinha");
         return;
       }
 

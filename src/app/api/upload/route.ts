@@ -20,7 +20,7 @@ function getSupabaseAdmin() {
   return createClient(url, key);
 }
 
-const BUCKET = ;
+const BUCKET = "vaquinha";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });

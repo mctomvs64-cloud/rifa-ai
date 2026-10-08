@@ -107,6 +107,7 @@ export function CheckoutModal({
 
   // openCheckoutPro removido
 
+  const processOrder = async (method: "pix" | "card") => {
     setIsProcessing(true);
     setErrorMsg(null);
 

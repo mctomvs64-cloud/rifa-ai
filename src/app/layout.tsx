@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "Plataforma completa para criação e participação em vaquinhas online. PIX seguro, números garantidos, sorteio transparente.",
-  keywords: [online", pix", "sorteio online", "comprar],
+  keywords: ["vaquinha online", "vaquinha pix", "sorteio online", "comprar vaquinha"],
   authors: [{ name: "Vaquinha Ai" }],
   openGraph: {
     type: "website",

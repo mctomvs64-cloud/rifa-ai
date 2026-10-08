@@ -300,7 +300,7 @@ export default async function SellerDashboard() {
         <div className="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
           <div>
             <div className="font-display text-lg font-bold">{raffles.length}</div>
-            <div className="text-white/50"criadas</div>
+            <div className="text-white/50">vaquinhas criadas</div>
           </div>
           <div>
             <div className="font-display text-lg font-bold text-emerald-400">{activeRaffles}</div>
