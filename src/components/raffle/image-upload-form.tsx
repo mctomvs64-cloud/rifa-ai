@@ -58,7 +58,7 @@ export function ImageUploadForm({ raffleId, currentImage }: { raffleId: string; 
   const saveImage = async (url: string) => {
     setIsUpdating(true);
     try {
-      const res = await fetch(`/api/rifas/${raffleId}`, {
+      const res = await fetch(`/api/vaquinhas/${raffleId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ coverImage: url }),
@@ -83,7 +83,7 @@ export function ImageUploadForm({ raffleId, currentImage }: { raffleId: string; 
   const handleRemove = async () => {
     setIsUpdating(true);
     try {
-      const res = await fetch(`/api/rifas/${raffleId}`, {
+      const res = await fetch(`/api/vaquinhas/${raffleId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ coverImage: null }),

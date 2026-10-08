@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/admin/rifas"
+            href="/admin/vaquinhas"
             className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-3.5 py-2 rounded-lg font-medium text-sm transition-colors"
           >
             💚 Vaquinhas

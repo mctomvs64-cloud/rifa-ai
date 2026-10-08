@@ -16,7 +16,7 @@ export function PublishRaffleButton({ raffleId }: { raffleId: string }) {
     setIsPublishing(true);
     
     try {
-      const res = await fetch(`/api/rifas/${raffleId}`, {
+      const res = await fetch(`/api/vaquinhas/${raffleId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "ACTIVE" }),

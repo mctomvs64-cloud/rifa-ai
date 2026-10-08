@@ -14,7 +14,7 @@ export function GenerateNumbersButton({ raffleId, totalNumbers }: { raffleId: st
     setIsGenerating(true);
 
     try {
-      const res = await fetch(`/api/rifas/${raffleId}/generate-numbers`, {
+      const res = await fetch(`/api/vaquinhas/${raffleId}/generate-numbers`, {
         method: "POST",
       });
 

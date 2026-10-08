@@ -16,10 +16,10 @@ export default middleware((req: NextRequest & { auth: { user?: { role?: string, 
   const userRole = session?.user?.role;
 
   // Rotas públicas — não precisam de autenticação
-  const publicRoutes = ["/", "/login", "/cadastro", "/rifas"];
+  const publicRoutes = ["/", "/login", "/cadastro", "/vaquinhas"];
   const isPublicRoute =
     publicRoutes.some((route) => pathname === route) ||
-    pathname.startsWith("/rifas/") ||
+    pathname.startsWith("/vaquinhas/") ||
     pathname.startsWith("/api/webhooks/") ||
     pathname.startsWith("/meus-numeros") ||
     pathname.startsWith("/checkout/");

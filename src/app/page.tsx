@@ -178,7 +178,7 @@ export default async function HomePage() {
               Vaquinhas Disponíveis
             </h2>
             <Link
-              href="/rifas"
+              href="/vaquinhas"
               className="text-sm text-primary hover:underline font-medium"
             >
               Ver todas →

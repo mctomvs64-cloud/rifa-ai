@@ -120,9 +120,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     });
 
     // Invalidate public raffle page and dashboard caches
-    revalidatePath(`/rifas/${raffle.slug}`);
+    revalidatePath(`/vaquinhas/${raffle.slug}`);
     revalidatePath("/dashboard");
-    revalidatePath("/admin/rifas");
+    revalidatePath("/admin/vaquinhas");
 
     return NextResponse.json({ raffle: updated });
   } catch (error) {

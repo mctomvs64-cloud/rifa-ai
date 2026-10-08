@@ -26,7 +26,7 @@ const createRaffleSchema = z.object({
 });
 
 /**
- * GET /api/rifas
+ * GET /api/vaquinhas
  * Listado vendedor autenticado.
  */
 export async function GET(req: NextRequest) {
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * POST /api/rifas
+ * POST /api/vaquinhas
  * Cria uma novapara o vendedor autenticado.
  */
 export async function POST(req: NextRequest) {

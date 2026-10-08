@@ -111,7 +111,7 @@ function SellerCard({ seller }: SellerCardProps) {
               {seller.raffles.slice(0, 3).map((raffle) => (
                 <Link
                   key={raffle.id}
-                  href={`/dashboard/rifas/${raffle.id}`}
+                  href={`/dashboard/vaquinhas/${raffle.id}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 hover:bg-muted rounded-lg text-sm text-foreground transition-colors"
                 >
                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${

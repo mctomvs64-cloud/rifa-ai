@@ -213,7 +213,7 @@ export default function CheckoutSuccessClient({
             )}
 
             <Link
-              href={`/rifas/${order.raffle.slug}`}
+              href={`/vaquinhas/${order.raffle.slug}`}
               className="w-full block py-3.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all text-sm"
             >
               ← Voltar para a Vaquinha

@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 
 /**
- * POST /api/rifas/[id]/generate-numbers
+ * POST /api/vaquinhas/[id]/generate-numbers
  * Gera os números no banco de dados para umaem rascunho.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

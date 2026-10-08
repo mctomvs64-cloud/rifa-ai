@@ -72,7 +72,7 @@ export async function POST(req: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const backBaseUrl = isRaffleId
-      ? `${baseUrl}/dashboard/rifas/${raffle.id}`
+      ? `${baseUrl}/dashboard/vaquinhas/${raffle.id}`
       : `${baseUrl}/checkout/sucesso/${order?.id}`;
 
     // Monta a preference no formato exigido pela API /v1/preferences do Mercado Pago

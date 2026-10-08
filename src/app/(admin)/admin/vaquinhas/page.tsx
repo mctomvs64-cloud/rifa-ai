@@ -75,7 +75,7 @@ export default async function MonitoramentoRifasPage() {
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
                     <Link
-                      href={`/dashboard/rifas/${raffle.id}`}
+                      href={`/dashboard/vaquinhas/${raffle.id}`}
                       className="px-2.5 py-1.5 bg-muted hover:bg-muted/80 rounded-md text-xs font-semibold text-foreground transition-colors"
                     >
                       Painel
@@ -99,10 +99,10 @@ export default async function MonitoramentoRifasPage() {
                     <DeleteRaffleButton
                       raffleId={raffle.id}
                       raffleTitle={raffle.title}
-                      redirectUrl="/admin/rifas"
+                      redirectUrl="/admin/vaquinhas"
                     />
                     <Link
-                      href={`/rifas/${raffle.slug}`}
+                      href={`/vaquinhas/${raffle.slug}`}
                       target="_blank"
                       className="text-primary hover:underline text-xs font-medium px-2 py-1"
                     >

@@ -27,7 +27,7 @@ export function DeleteRaffleButton({
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/rifas/${raffleId}`, {
+      const res = await fetch(`/api/vaquinhas/${raffleId}`, {
         method: "DELETE",
       });
 

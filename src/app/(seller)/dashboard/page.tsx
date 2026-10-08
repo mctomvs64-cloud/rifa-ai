@@ -153,7 +153,7 @@ export default async function SellerDashboard() {
           </p>
         </div>
         <Link
-          href="/dashboard/rifas/nova"
+          href="/dashboard/vaquinhas/nova"
           className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
         >
           ✨ Nova Vaquinha
@@ -324,7 +324,7 @@ export default async function SellerDashboard() {
           <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl bg-muted/10">
             <span className="text-5xl mb-4 block opacity-40">🎫</span>
             <p className="text-muted-foreground mb-4">Você ainda não criou nenhuma</p>
-            <Link href="/dashboard/rifas/nova" className="text-primary hover:underline font-semibold">
+            <Link href="/dashboard/vaquinhas/nova" className="text-primary hover:underline font-semibold">
               Comece criando sua primeira→
             </Link>
           </div>
@@ -385,7 +385,7 @@ export default async function SellerDashboard() {
                       <td className="px-6 py-4 font-semibold tabular-nums">{formatCurrency(revenue)}</td>
                       <td className="px-6 py-4 text-right">
                         <Link
-                          href={`/dashboard/rifas/${raffle.id}`}
+                          href={`/dashboard/vaquinhas/${raffle.id}`}
                           className="inline-block bg-primary/10 hover:bg-primary/20 text-primary font-semibold px-3.5 py-1.5 rounded-lg text-xs transition-colors"
                         >
                           Gerenciar →

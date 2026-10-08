@@ -10,7 +10,7 @@ export function AdminSidebar() {
 
   const links = [
     { href: "/admin", label: "Visão Geral", icon: "📈" },
-    { href: "/admin/rifas", label: "Vaquinhas", icon: "💚" },
+    { href: "/admin/vaquinhas", label: "Vaquinhas", icon: "💚" },
     { href: "/admin/repasses", label: "Repasses", icon: "💰" },
     { href: "/admin/vendedores", label: "Organizadores", icon: "👥" },
     { href: "/admin/configuracoes", label: "Configurações", icon: "⚙️" },

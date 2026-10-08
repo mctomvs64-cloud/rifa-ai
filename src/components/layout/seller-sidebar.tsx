@@ -10,7 +10,7 @@ export function SellerSidebar() {
 
   const links = [
     { href: "/dashboard", label: "Painel Geral", icon: "📊" },
-    { href: "/dashboard/rifas/nova", label: "Nova Vaquinha", icon: "➕" },
+    { href: "/dashboard/vaquinhas/nova", label: "Nova Vaquinha", icon: "➕" },
   ];
 
   return (

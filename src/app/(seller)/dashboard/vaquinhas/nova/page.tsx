@@ -49,7 +49,7 @@ export default function CreateRafflePage() {
           promoPrice: Number(p.promoPrice.replace(",", ".")),
         }));
 
-      const response = await fetch("/api/rifas", {
+      const response = await fetch("/api/vaquinhas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -74,7 +74,7 @@ export default function CreateRafflePage() {
       }
 
       const { raffle } = await response.json();
-      router.push(`/dashboard/rifas/${raffle.id}`);
+      router.push(`/dashboard/vaquinhas/${raffle.id}`);
     } catch (error) {
       alert("Erro de conexão ao criar a");
     } finally {

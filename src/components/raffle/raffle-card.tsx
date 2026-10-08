@@ -27,7 +27,7 @@ export function RaffleCard({ raffle }: RaffleCardProps) {
 
   return (
     <Link
-      href={`/rifas/${raffle.slug}`}
+      href={`/vaquinhas/${raffle.slug}`}
       className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 card-shine"
     >
       {/* Imagem do prêmio */}

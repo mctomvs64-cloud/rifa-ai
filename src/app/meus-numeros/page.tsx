@@ -85,7 +85,7 @@ export default function MeusNumerosPage() {
                 orders.map((order) => (
                   <div key={order.id} className="bg-card border rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row gap-6 justify-between">
                     <div>
-                      <Link href={`/rifas/${order.raffle.slug}`} className="font-display font-bold text-xl hover:text-primary transition-colors">
+                      <Link href={`/vaquinhas/${order.raffle.slug}`} className="font-display font-bold text-xl hover:text-primary transition-colors">
                         {order.raffle.title}
                       </Link>
                       <div className="text-sm text-muted-foreground mt-1">

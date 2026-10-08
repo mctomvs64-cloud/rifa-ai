@@ -15,7 +15,7 @@ export function CloseRaffleButton({ raffleId, raffleTitle }: { raffleId: string;
 
     setIsClosing(true);
     try {
-      const res = await fetch(`/api/rifas/${raffleId}`, {
+      const res = await fetch(`/api/vaquinhas/${raffleId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "CLOSED" }),

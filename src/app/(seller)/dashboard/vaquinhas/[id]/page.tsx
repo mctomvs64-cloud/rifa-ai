@@ -82,7 +82,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
   const openValue = buyerRecords.filter((r) => r.status !== "PAID").reduce((acc, r) => acc + r.totalAmount, 0);
   const leadCount = buyerRecords.filter((r) => r.status !== "PAID").length;
 
-  const raffleUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/rifas/${raffle.slug}`;
+  const raffleUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/vaquinhas/${raffle.slug}`;
   const raffleTitle = raffle.title;
   const rafflePrize = raffle.prize;
 
@@ -112,7 +112,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
             </span>
           </div>
           <p className="text-muted-foreground text-sm">
-            {process.env.NEXT_PUBLIC_APP_URL}/rifas/{raffle.slug}
+            {process.env.NEXT_PUBLIC_APP_URL}/vaquinhas/{raffle.slug}
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
             <CloseRaffleButton raffleId={raffle.id} raffleTitle={raffle.title} />
           )}
           <Link
-            href={`/rifas/${raffle.slug}`}
+            href={`/vaquinhas/${raffle.slug}`}
             target="_blank"
             className="border bg-background hover:bg-muted text-foreground font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
           >
@@ -149,7 +149,7 @@ export default async function SellerManageRafflePage({ params }: { params: Promi
           <DeleteRaffleButton
             raffleId={raffle.id}
             raffleTitle={raffle.title}
-            redirectUrl={session.user.role === "ADMIN" ? "/admin/rifas" : "/dashboard"}
+            redirectUrl={session.user.role === "ADMIN" ? "/admin/vaquinhas" : "/dashboard"}
           />
         </div>
       </div>
