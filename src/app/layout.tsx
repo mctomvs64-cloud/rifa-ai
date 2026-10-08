@@ -18,17 +18,17 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | RifaAI",
-    default: "RifaAI — Rifas Online Seguras e Confiáveis",
+    template: "%s | VaquinhaAI",
+    default: "VaquinhaAI — Vaquinhas Online Seguras e Confiáveis",
   },
   description:
-    "Plataforma completa para criação e participação em rifas online. PIX seguro, números garantidos, sorteio transparente.",
+    "Plataforma completa para criação e participação em vaquinhas online. PIX seguro, números garantidos, sorteio transparente.",
   keywords: ["rifa online", "rifa pix", "sorteio online", "comprar rifa"],
   authors: [{ name: "RifaAI" }],
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    siteName: "RifaAI",
+    siteName: "VaquinhaAI",
   },
   twitter: {
     card: "summary_large_image",

@@ -64,7 +64,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const raffle = await getRaffle(slug);
 
-  if (!raffle) return { title: "Rifa não encontrada" };
+  if (!raffle) return { title: "Vaquinha não encontrada" };
 
   return {
     title: `${raffle.title} — VaquinhaAI`,
